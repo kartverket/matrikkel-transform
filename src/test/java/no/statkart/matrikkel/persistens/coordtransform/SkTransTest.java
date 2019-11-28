@@ -1,23 +1,74 @@
 package no.statkart.matrikkel.persistens.coordtransform;
 
-import no.statkart.matrikkel.domene.geometri.Position;
-import no.statkart.matrikkel.domene.util.SkTransFactory;
-import no.statkart.matrikkel.util.misc.MathUtils;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
-import static org.testng.AssertJUnit.assertTrue;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * testklasse for funksjonalitet gjennomført i SkTrans
  *
  * @author Roar Ingebrigtsen
  */
-@Test
 public class SkTransTest {
+   public SkTrans getSkTrans() {
+      return SkTransFactory.getInstance();
+   }
+
+   class Position {
+      private Double x;
+      private Double y;
+      private Double z;
+
+      public void setY(Double y) {
+         this.y = y;
+      }
+
+      public void setZ(Double z) {
+         this.z = z;
+      }
+
+      public void setX(Double x) {
+         this.x = x;
+      }
+
+      public Position(double x, double y) {
+         this.x = x;
+         this.y = y;
+      }
+
+      public Double getX() {
+         return x;
+      }
+
+      public Double getY() {
+         return y;
+      }
+
+      public Double getZ() {
+         return z;
+      }
+
+      private boolean compare(double d1, double d2) {
+         int scale = 2;
+         RoundingMode rounding = RoundingMode.HALF_UP;
+         return new BigDecimal(d1).setScale(scale, rounding).equals(new BigDecimal(d2).setScale(scale, rounding));
+      }
+
+      public boolean isSamePosition(Position other) {
+         if (z == null && other.z == null || z == null && other.z == 0 || z == 0 && other.z == null) {
+            return compare(x, other.x) && compare(y, other.y);
+         }
+         return compare(x, other.x) && compare(y, other.y) && compare(z, other.z);
+      }
+   }
 
    @Test
    public void testInitialiseringAvBibliotek() {
-      SkTransFactory.getSkTrans();
+      getSkTrans();
    }
 
    //endret mhp x = nord >_> men ikke hos oss.
@@ -35,23 +86,19 @@ public class SkTransTest {
 
       double[] transformertXYZ = null;
 
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      fraPos1 = MathUtils.round(fraPos1, 2);
+      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
 
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos1.isSamePosition(tilPos1));
-
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      fraPos2 = MathUtils.round(fraPos2, 2);
-
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos2.isSamePosition(tilPos2));
+      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
 
    }
 
@@ -69,24 +116,19 @@ public class SkTransTest {
 
       double[] transformertXYZ = null;
 
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      fraPos1 = MathUtils.round(fraPos1, 2);
+      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
 
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos1.isSamePosition(tilPos1));
-
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      fraPos2 = MathUtils.round(fraPos2, 2);
-
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos2.isSamePosition(tilPos2));
-
+      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
    }
 
    @Test
@@ -102,31 +144,27 @@ public class SkTransTest {
       Position tilPos2 = new Position(-340000.00, 150000.00);
 
       double[] transformertXYZ = null;
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), tilSosiSys, fraSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), tilSosiSys, fraSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      fraPos1 = MathUtils.round(fraPos1, 2);
+      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
 
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos1.isSamePosition(tilPos1));
-
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), tilSosiSys, fraSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), tilSosiSys, fraSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      fraPos2 = MathUtils.round(fraPos2, 2);
-
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos2.isSamePosition(tilPos2));
+      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
 
    }
 
@@ -143,60 +181,50 @@ public class SkTransTest {
       Position tilPos2 = new Position(-340000.00, 150000.00);
 
       double[] transformertXYZ = null;
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), tilSosiSys, fraSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), tilSosiSys, fraSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      fraPos1 = MathUtils.round(fraPos1, 2);
+      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
 
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos1.isSamePosition(tilPos1));
-
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
-      transformertXYZ = SkTransFactory.getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), tilSosiSys, fraSosiSys);
+      transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), tilSosiSys, fraSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      fraPos2 = MathUtils.round(fraPos2, 2);
-
-      assertTrue("Transformert posisjon stemmer ikke med virkelige data!", fraPos2.isSamePosition(tilPos2));
+      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
 
    }
 
    @Test
    public void testTrans_22_23() {
 
-//      double[] transformert1 = SkTransFactory.getSkTrans().transform(6649996, 593029, 0, 22, 23);
-//      double[] transformert2 = SkTransFactory.getSkTrans().transform(6673672, 611324, 0, 22, 23);
+//      double[] transformert1 = getSkTrans().transform(6649996, 593029, 0, 22, 23);
+//      double[] transformert2 = getSkTrans().transform(6673672, 611324, 0, 22, 23);
 
-      double[] transformert3 = SkTransFactory.getSkTrans().transform(220017.14, 12205.62, 0, 3, 22);
-      double[] transformert4 = SkTransFactory.getSkTrans().transform(220011.04, 12207.99, 0, 3, 22);
-      double[] transformert5 = SkTransFactory.getSkTrans().transform(220023.86, 12197.69, 0, 3, 22);
-      double[] transformert6 = SkTransFactory.getSkTrans().transform(220041.78, 12207.54, 0, 3, 22);
-      double[] transformert7 = SkTransFactory.getSkTrans().transform(220047.35, 12210.60, 0, 3, 22);
-      double[] transformert8 = SkTransFactory.getSkTrans().transform(220038.15, 12211.54, 0, 3, 22);
-      double[] transformert9 = SkTransFactory.getSkTrans().transform(220032.12, 12217.12, 0, 3, 22);
-      double[] transformert10 = SkTransFactory.getSkTrans().transform(220022.82, 12228.56, 0, 3, 22);
-      double[] transformert11 = SkTransFactory.getSkTrans().transform(220012.07, 12242.40, 0, 3, 22);
-      double[] transformert12 = SkTransFactory.getSkTrans().transform(219999.5, 12259.62, 0, 3, 22);
-      double[] transformert13 = SkTransFactory.getSkTrans().transform(219996.87, 12256.00, 0, 3, 22);
-      double[] transformert14 = SkTransFactory.getSkTrans().transform(219997.17, 12256.33, 0, 3, 22);
-      double[] transformert15 = SkTransFactory.getSkTrans().transform(219983.05, 12242.26, 0, 3, 22);
-      double[] transformert16 = SkTransFactory.getSkTrans().transform(220011.04, 12207.99, 0, 3, 22);
-      double[] transformert17 = SkTransFactory.getSkTrans().transform(219983.05, 12242.26, 0, 3, 22);
-
-
-      assertTrue(true);
-
+      double[] transformert3 = getSkTrans().transform(220017.14, 12205.62, 0, 3, 22);
+      double[] transformert4 = getSkTrans().transform(220011.04, 12207.99, 0, 3, 22);
+      double[] transformert5 = getSkTrans().transform(220023.86, 12197.69, 0, 3, 22);
+      double[] transformert6 = getSkTrans().transform(220041.78, 12207.54, 0, 3, 22);
+      double[] transformert7 = getSkTrans().transform(220047.35, 12210.60, 0, 3, 22);
+      double[] transformert8 = getSkTrans().transform(220038.15, 12211.54, 0, 3, 22);
+      double[] transformert9 = getSkTrans().transform(220032.12, 12217.12, 0, 3, 22);
+      double[] transformert10 = getSkTrans().transform(220022.82, 12228.56, 0, 3, 22);
+      double[] transformert11 = getSkTrans().transform(220012.07, 12242.40, 0, 3, 22);
+      double[] transformert12 = getSkTrans().transform(219999.5, 12259.62, 0, 3, 22);
+      double[] transformert13 = getSkTrans().transform(219996.87, 12256.00, 0, 3, 22);
+      double[] transformert14 = getSkTrans().transform(219997.17, 12256.33, 0, 3, 22);
+      double[] transformert15 = getSkTrans().transform(219983.05, 12242.26, 0, 3, 22);
+      double[] transformert16 = getSkTrans().transform(220011.04, 12207.99, 0, 3, 22);
+      double[] transformert17 = getSkTrans().transform(219983.05, 12242.26, 0, 3, 22);
    }
-
-
 }
