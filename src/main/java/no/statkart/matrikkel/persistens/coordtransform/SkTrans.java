@@ -57,10 +57,11 @@ public class SkTrans {
     }
 
     private void copyFile(String dir, Filename filename, Path destination) {
-        Path srcPath = Paths.get("/", dir, filename.name());
-        InputStream istream = SkTrans.class.getResourceAsStream(srcPath.toString());
+        String srcPath = "/" + dir + "/" + filename.name();
+        InputStream istream = SkTrans.class.getResourceAsStream(srcPath);
         if (istream == null) {
-            throw new RuntimeException(String.format("Failed to get input stream from %s", srcPath.toString()));
+            throw new RuntimeException(String.format("Failed to get input stream from %s in %s",
+                    srcPath, this.getClass().getResource("SkTrans.class")));
         }
         try {
             Path target = Paths.get(destination.toString(), filename.name());
@@ -75,18 +76,16 @@ public class SkTrans {
         }
     }
 
-    private void copyFiles(Path tmpdir) {
-        Path libDir = Paths.get(tmpdir.toString(), "lib");
-        Path initDir = Paths.get(tmpdir.toString(), "transformation_init");
+    private void copyFiles(Path tmpDir) {
+        Path initDir = Paths.get(tmpDir.toString(), "transformation_init");
         try {
-            Files.createDirectory(libDir);
             Files.createDirectory(initDir);
         } catch (IOException e) {
             logger.error("Failed to create temporary directory structure", e);
             throw new RuntimeException(e);
         }
         for (Filename lib: libraries) {
-            copyFile("lib", lib, libDir);
+            copyFile("lib", lib, tmpDir);
         }
         for (Filename initFile: initFiles) {
             copyFile("transformation_init", initFile, initDir);
