@@ -23,29 +23,29 @@ public class SkTrans {
 
     private static boolean isOnLinux = System.getProperty("os.name").equals("Linux");
     private String transformationPath;
-    private static final Filename linuxLibrary = new Filename("libsositrans.so");
-    private static final Filename windowsLibrary = new Filename("SosiTransformasjon.dll");
+    private static final Filename linuxLibrary = new Filename("libsositrans", "so");
+    private static final Filename windowsLibrary = new Filename("SosiTransformasjon", "dll");
     private static Filename[] libraries = new Filename[]{
-            new Filename("libifcoremd.dll"),
-            new Filename("libmmd.dll"),
-            new Filename("libSosiTransformasjon.a"),
+            new Filename("libifcoremd", "dll"),
+            new Filename("libmmd", "dll"),
+            new Filename("libSosiTransformasjon", "a"),
             linuxLibrary,
-            new Filename("skt2lan1_64.dll"),
+            new Filename("skt2lan1_64", "dll"),
             windowsLibrary,
-            new Filename("svml_dispmd.dll")
+            new Filename("svml_dispmd", "dll")
     };
     private static Filename[] initFiles = new Filename[]{
-            new Filename("arcgp-2006-sk.bin"),
-            new Filename("HREF2016B_NN2000_EUREF89.bin"),
-            new Filename("lan1_fellesp_20081014.bin"),
-            new Filename("Milne_east.bin"),
-            new Filename("NNTrans2016B.bin"),
-            new Filename("Uplift_Svalbard_pdim_pgs_tot.dat"),
-            new Filename("href2008a.bin"),
-            new Filename("IGS05N_EUREF89_7PAR_2013.txt"),
-            new Filename("lan1_fellesp.bin"),
-            new Filename("Milne_north.bin"),
-            new Filename("RH2000LU_absup.bin")
+            new Filename("arcgp-2006-sk", "bin"),
+            new Filename("HREF2016B_NN2000_EUREF89", "bin"),
+            new Filename("lan1_fellesp_20081014", "bin"),
+            new Filename("Milne_east", "bin"),
+            new Filename("NNTrans2016B", "bin"),
+            new Filename("Uplift_Svalbard_pdim_pgs_tot", "dat"),
+            new Filename("href2008a", "bin"),
+            new Filename("IGS05N_EUREF89_7PAR_2013", "txt"),
+            new Filename("lan1_fellesp", "bin"),
+            new Filename("Milne_north", "bin"),
+            new Filename("RH2000LU_absup", "bin")
     };
 
     private native int xSosiTrans(int fraKoordSys, double fraX, double fraY, double fraH, int tilKoordSys, double[] returTall);
@@ -67,6 +67,7 @@ public class SkTrans {
             Path target = Paths.get(destination.toString(), filename.name());
             Files.copy(istream, target, StandardCopyOption.REPLACE_EXISTING);
             filename.setInstalledPath(target.toFile());
+            registerFileForCleanup(new File(filename.getInstalledPath().toString()));
         } catch (IOException e) {
             logger.error("Failed to copy file {} from {} to {}", filename.name(), dir, destination.toString(), e);
             logger.error("istream: {}", istream);
@@ -79,7 +80,8 @@ public class SkTrans {
     private void copyFiles(Path tmpDir) {
         Path initDir = Paths.get(tmpDir.toString(), "transformation_init");
         try {
-            Files.createDirectory(initDir);
+            initDir = Files.createDirectory(initDir);
+            registerFileForCleanup(initDir.toFile());
         } catch (IOException e) {
             logger.error("Failed to create temporary directory structure", e);
             throw new RuntimeException(e);
@@ -92,11 +94,16 @@ public class SkTrans {
         }
     }
 
+    private void registerFileForCleanup(File file) {
+        logger.debug("Registering {} for cleanup", file.toString());
+        file.deleteOnExit();
+    }
+
     private void setupNativeFiles() {
         Path tmpdir = null;
         try {
             tmpdir = Files.createTempDirectory("sktrans-lib");
-            tmpdir.toFile().deleteOnExit();
+            registerFileForCleanup(tmpdir.toFile());
             logger.info("Created temporary directory {}", tmpdir.getFileName());
         } catch (IOException e) {
             logger.error("Failed to create temporary directory", e);
@@ -105,22 +112,26 @@ public class SkTrans {
         try {
             copyFiles(tmpdir);
         } catch (RuntimeException e) {
-            logger.warn("Removing temporary directory {} since exception '{}' was thrown", tmpdir.getFileName(), e.getMessage());
+            logger.warn("Attempting to remove temporary directory {} since exception '{}' was thrown",
+                    tmpdir.getFileName(), e.getMessage());
+            //noinspection ResultOfMethodCallIgnored
             tmpdir.toFile().delete();
             throw e;
         }
     }
 
     private static class Filename {
-        private final String name;
+        private final String prefix;
+        private final String suffix;
         private File installedPath;
 
-        Filename(String name) {
-            this.name = name;
+        Filename(String prefix, String suffix) {
+            this.prefix = prefix;
+            this.suffix = suffix;
         }
 
         String name() {
-            return name;
+            return prefix + "." + suffix;
         }
 
         void setInstalledPath(File path) {
