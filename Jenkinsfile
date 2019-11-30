@@ -8,7 +8,7 @@ pipeline {
     stages{
         stage('Bygg og test') {
             steps {
-                sh "./gradlew --info clean assemble test"
+                bat "./gradlew --info clean assemble test"
             }
         }
     }
