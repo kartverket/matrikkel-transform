@@ -8,16 +8,29 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         disableConcurrentBuilds()
     }
+    environment {
+        gradleOptions = "--no-daemon --info"
+    }
     stages{
-        stage('Bygg og test') {
+        stage('Clean') {
             steps {
-                bat "./gradlew --no-daemon --info clean assemble test"
+                bat "./gradlew ${gradleOptions} clean"
+            }
+        }
+        stage('Assemble') {
+            steps {
+                bat "./gradlew ${gradleOptions} assemble"
+            }
+        }
+        stage('Test') {
+            steps {
+                bat "./gradlew ${gradleOptions} -DignoreFailures=true test"
             }
         }
     }
     post {
         always {
-            deleteDir()
+            junit "build/test-results/test/*.xml"
         }
     }
 }
