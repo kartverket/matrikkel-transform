@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        jdk 'Java 8 Latest'
+    }
     options {
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: '10'))
