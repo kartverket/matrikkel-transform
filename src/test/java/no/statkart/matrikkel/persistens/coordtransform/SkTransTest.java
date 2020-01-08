@@ -10,15 +10,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * testklasse for funksjonalitet gjennomført i SkTrans
- *
- * @author Roar Ingebrigtsen
  */
 public class SkTransTest {
    public SkTrans getSkTrans() {
       return SkTransFactory.getInstance();
    }
 
-   class Position {
+   static class Position {
       private Double x;
       private Double y;
       private Double z;
@@ -68,13 +66,13 @@ public class SkTransTest {
 
    @Test
    public void testInitialiseringAvBibliotek() {
-      getSkTrans();
+      assertThat(SkTransFactory.getInstance())
+              .isNotNull();
    }
 
    //endret mhp x = nord >_> men ikke hos oss.
    @Test
    public void testTransformeringAvEnkeltDataFraSosi_3_Til_22() {
-
       int fraSosiSys = 3;
       int tilSosiSys = 22;
 
@@ -84,27 +82,28 @@ public class SkTransTest {
       Position tilPos1 = new Position(248070.73, 6570974.38);
       Position tilPos2 = new Position(258055.97, 6571233.00);
 
-      double[] transformertXYZ = null;
-
+      double[] transformertXYZ;
       transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
+      assertThat(fraPos1.isSamePosition(tilPos1))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
 
       transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
-
+      assertThat(fraPos2.isSamePosition(tilPos2))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
    }
 
    @Test
    public void testTransformeringAvEnkeltDataFraSosi_3_Til_23() {
-
       int fraSosiSys = 3;
       int tilSosiSys = 23;
 
@@ -114,26 +113,28 @@ public class SkTransTest {
       Position tilPos1 = new Position(-93162.50, 6609129.90);
       Position tilPos2 = new Position(-83159.84, 6608484.13);
 
-      double[] transformertXYZ = null;
-
+      double[] transformertXYZ;
       transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
+      assertThat(fraPos1.isSamePosition(tilPos1))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
 
       transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
+      assertThat(fraPos2.isSamePosition(tilPos2))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
    }
 
    @Test
    public void testTransformeringAvEnkeltDataFraSosi_3_Til_23_Til_3() {
-
       int fraSosiSys = 3;
       int tilSosiSys = 23;
 
@@ -143,7 +144,7 @@ public class SkTransTest {
       Position tilPos1 = new Position(-350000.00, 150000.00);
       Position tilPos2 = new Position(-340000.00, 150000.00);
 
-      double[] transformertXYZ = null;
+      double[] transformertXYZ;
       transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
@@ -153,7 +154,9 @@ public class SkTransTest {
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
+      assertThat(fraPos1.isSamePosition(tilPos1))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
 
       transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
@@ -164,13 +167,13 @@ public class SkTransTest {
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
-
+      assertThat(fraPos2.isSamePosition(tilPos2))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
    }
 
    @Test
    public void testTransformeringAvEnkeltDataFraSosi_3_Til_22_Til_3() {
-
       int fraSosiSys = 3;
       int tilSosiSys = 22;
 
@@ -180,7 +183,7 @@ public class SkTransTest {
       Position tilPos1 = new Position(-350000.00, 150000.00);
       Position tilPos2 = new Position(-340000.00, 150000.00);
 
-      double[] transformertXYZ = null;
+      double[] transformertXYZ;
       transformertXYZ = getSkTrans().transform(fraPos1.getY(), fraPos1.getX(), fraPos1.getZ() == null ? 0d : fraPos1.getZ(), fraSosiSys, tilSosiSys);
       fraPos1.setX(transformertXYZ[1]);
       fraPos1.setY(transformertXYZ[0]);
@@ -190,7 +193,9 @@ public class SkTransTest {
       fraPos1.setY(transformertXYZ[0]);
       fraPos1.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos1.isSamePosition(tilPos1)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
+      assertThat(fraPos1.isSamePosition(tilPos1))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
 
       transformertXYZ = getSkTrans().transform(fraPos2.getY(), fraPos2.getX(), fraPos2.getZ() == null ? 0d : fraPos2.getZ(), fraSosiSys, tilSosiSys);
       fraPos2.setX(transformertXYZ[1]);
@@ -201,13 +206,13 @@ public class SkTransTest {
       fraPos2.setY(transformertXYZ[0]);
       fraPos2.setZ(transformertXYZ[2]);
 
-      assertThat(fraPos2.isSamePosition(tilPos2)).withFailMessage("Transformert posisjon stemmer ikke med virkelige data!");
-
+      assertThat(fraPos2.isSamePosition(tilPos2))
+              .withFailMessage("Transformert posisjon stemmer ikke med virkelige data!")
+              .isTrue();
    }
 
    @Test
    public void testTrans_22_23() {
-
 //      double[] transformert1 = getSkTrans().transform(6649996, 593029, 0, 22, 23);
 //      double[] transformert2 = getSkTrans().transform(6673672, 611324, 0, 22, 23);
 
