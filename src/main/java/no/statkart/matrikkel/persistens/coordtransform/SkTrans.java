@@ -62,18 +62,16 @@ public class SkTrans {
 
     private static void copyFile(String dir, Filename filename, Path destination) {
         String srcPath = '/' + dir + '/' + filename.name();
-        InputStream istream = SkTrans.class.getResourceAsStream(srcPath);
-        if (istream == null) {
-            throw new RuntimeException(String.format("Failed to get input stream from %s in %s",
-                    srcPath, SkTrans.class.getResource("SkTrans.class")));
-        }
-        try {
+        try (InputStream istream = SkTrans.class.getResourceAsStream(srcPath)) {
+            if (istream == null) {
+                throw new RuntimeException(String.format("Failed to get input stream from %s in %s",
+                        srcPath, SkTrans.class.getResource("SkTrans.class")));
+            }
             Path target = Paths.get(destination.toString(), filename.name());
             Files.copy(istream, target, StandardCopyOption.REPLACE_EXISTING);
             filename.setInstalledPath(target.toFile());
         } catch (IOException e) {
             logger.error("Failed to copy file {} from {} to {}", filename.name(), dir, destination.toString(), e);
-            logger.error("istream: {}", istream);
             logger.error("srcPath: {}", srcPath);
             logger.error("destination: {}", destination);
             throw new RuntimeException(e);
@@ -173,12 +171,9 @@ public class SkTrans {
             throw new RuntimeException(String.format("Failed to get input stream from %s in %s",
                     jarPath, SkTrans.class.getResource("SkTrans.class")));
         }
-        try {
-            MessageDigest jarDigester = MessageDigest.getInstance(DIGEST_ALGORITHM);
-            DigestInputStream jarDis = new DigestInputStream(jarStream, jarDigester);
-            MessageDigest fileDigester = MessageDigest.getInstance(DIGEST_ALGORITHM);
-            InputStream fileStream = new FileInputStream(fileSystemPath);
-            DigestInputStream fileDis = new DigestInputStream(fileStream, fileDigester);
+
+        try (DigestInputStream jarDis = new DigestInputStream(jarStream, MessageDigest.getInstance(DIGEST_ALGORITHM));
+             DigestInputStream fileDis = new DigestInputStream(new FileInputStream(fileSystemPath), MessageDigest.getInstance(DIGEST_ALGORITHM))) {
             byte[] fileDigest = fileDis.getMessageDigest().digest();
             byte[] jarDigest = jarDis.getMessageDigest().digest();
             if (Arrays.equals(fileDigest, jarDigest)) {
