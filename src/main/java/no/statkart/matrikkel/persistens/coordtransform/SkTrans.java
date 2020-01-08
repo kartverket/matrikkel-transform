@@ -18,28 +18,26 @@ import java.util.Arrays;
 
 /**
  * Klasse som kommuniserer med transformasjonsbiblioteket via et jni-kall.
- *
- * @author Roar Ingebrigtsen
  */
 public class SkTrans {
     private static final Logger logger = LoggerFactory.getLogger(SkTrans.class);
     private static final String INSTALL_DIRECTORY_INFIX = "statkart/matrikkelen";
     private static boolean isOnLinux = System.getProperty("os.name").equals("Linux");
-    private final String DIGEST_ALGORITHM = "SHA-256";
-    private final String TRANSFORMATION_INIT_DIR_NAME = "transformation_init";
-    private final String LIB_DIR_NAME = "lib";
+    private static final String DIGEST_ALGORITHM = "SHA-256";
+    private static final String TRANSFORMATION_INIT_DIR_NAME = "transformation_init";
+    private static final String LIB_DIR_NAME = "lib";
     private static Filename linuxLibrary = new Filename("libsositrans.so");
     private static Filename windowsLibrary = new Filename("SosiTransformasjon.dll");
-    private static Filename [] libraries = new Filename[] {
+    private static Filename[] libraries = {
             linuxLibrary,
             windowsLibrary,
             new Filename("libifcoremd.dll"),
             new Filename("libmmd.dll"),
             new Filename("libSosiTransformasjon.a"),
             new Filename("skt2lan1_64.dll"),
-            new Filename("svml_dispmd.dll")
+            new Filename("svml_dispmd.dll"),
     };
-    private static Filename[] initFiles = new Filename[] {
+    private static Filename[] initFiles = {
             new Filename("arcgp-2006-sk.bin"),
             new Filename("HREF2016B_NN2000_EUREF89.bin"),
             new Filename("lan1_fellesp_20081014.bin"),
@@ -50,7 +48,7 @@ public class SkTrans {
             new Filename("IGS05N_EUREF89_7PAR_2013.txt"),
             new Filename("lan1_fellesp.bin"),
             new Filename("Milne_north.bin"),
-            new Filename("RH2000LU_absup.bin")
+            new Filename("RH2000LU_absup.bin"),
     };
 
     private native int xSosiTrans(int fraKoordSys, double fraX, double fraY, double fraH, int tilKoordSys, double[] returTall);
@@ -62,12 +60,12 @@ public class SkTrans {
         initializeLibrary();
     }
 
-    private void copyFile(String dir, Filename filename, Path destination) {
-        String srcPath = "/" + dir + "/" + filename.name();
+    private static void copyFile(String dir, Filename filename, Path destination) {
+        String srcPath = '/' + dir + '/' + filename.name();
         InputStream istream = SkTrans.class.getResourceAsStream(srcPath);
         if (istream == null) {
             throw new RuntimeException(String.format("Failed to get input stream from %s in %s",
-                    srcPath, this.getClass().getResource("SkTrans.class")));
+                    srcPath, SkTrans.class.getResource("SkTrans.class")));
         }
         try {
             Path target = Paths.get(destination.toString(), filename.name());
@@ -162,18 +160,18 @@ public class SkTrans {
         return true;
     }
 
-    private boolean testFile(String filesystemDir, Filename filename, String jarDir) {
+    private static boolean testFile(String filesystemDir, Filename filename, String jarDir) {
         File fileSystemPath = Paths.get(filesystemDir, filename.name()).toFile();
         if (!fileSystemPath.exists()) {
             logger.debug("Couldn't find filesystem path for {}", fileSystemPath);
             return true;
         }
         filename.setInstalledPath(fileSystemPath);
-        String jarPath = "/" + jarDir + "/" + filename.name();
+        String jarPath = '/' + jarDir + '/' + filename.name();
         InputStream jarStream = SkTrans.class.getResourceAsStream(jarPath);
         if (jarStream == null) {
             throw new RuntimeException(String.format("Failed to get input stream from %s in %s",
-                    jarPath, this.getClass().getResource("SkTrans.class")));
+                    jarPath, SkTrans.class.getResource("SkTrans.class")));
         }
         try {
             MessageDigest jarDigester = MessageDigest.getInstance(DIGEST_ALGORITHM);
@@ -263,7 +261,9 @@ public class SkTrans {
 
     private void xSosiTransWrapper(int fraKoordSys, double fraX, double fraY, double fraH, int tilKoordSys, double[] returTall) {
         int res = xSosiTrans(fraKoordSys, fraX, fraY, fraH, tilKoordSys, returTall);
-        logger.debug(fraKoordSys + ": (" + fraX + ", " + fraY + ") -> " + tilKoordSys + ": (" + returTall[0] + ", " + returTall[1] + ") [" + res + "]");
+        if (logger.isDebugEnabled()) {
+            logger.debug(fraKoordSys + ": (" + fraX + ", " + fraY + ") -> " + tilKoordSys + ": (" + returTall[0] + ", " + returTall[1] + ") [" + res + "]");
+        }
         if (SkTransException.isError(res)) {
             throw new SkTransException(SkTransException.ErrorCode.fromInt(res));
         }
@@ -299,7 +299,7 @@ public class SkTrans {
     /**
      * Kaller dll via JNI for å utføre transformasjon et array av koordinater
      *
-     * @param in            array med koordinater som skal transtransformeres: [x1,y1,z1,...,xN,yN,zN] eller [x1,y1...,xN,yN]
+     * @param in            array med koordinater som skal transformeres: [x1,y1,z1,...,xN,yN,zN] eller [x1,y1...,xN,yN]
      * @param dimensions    angir om array inneholder 2 eller 3 verdier per koordinat
      * @param sosiFraSystem sosi-kode for koordinatsystem som x, y og z
      * @param sosiTilSystem sosi-kode for koordinatsystem som koordinatene skal transformeres til
