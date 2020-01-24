@@ -260,7 +260,7 @@ public class SkTrans {
             logger.debug(fraKoordSys + ": (" + fraX + ", " + fraY + ") -> " + tilKoordSys + ": (" + returTall[0] + ", " + returTall[1] + ") [" + res + "]");
         }
         if (SkTransException.isError(res)) {
-            throw new SkTransException(SkTransException.ErrorCode.fromInt(res));
+            throw new SkTransException(SkTransException.ErrorCode.fromInt(res), fraKoordSys, tilKoordSys, fraX, fraY, fraH);
         }
     }
 

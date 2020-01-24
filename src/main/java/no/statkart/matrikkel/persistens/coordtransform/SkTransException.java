@@ -5,6 +5,11 @@ import java.util.Map;
 
 public class SkTransException extends RuntimeException {
     static final long serialVersionUID = 1L;
+    private final int sourceSosiCode;
+    private final int destinationSosiCode;
+    private final double x;
+    private final double y;
+    private final double z;
     private ErrorCode errorCode;
 
     public enum ErrorCode {
@@ -181,9 +186,14 @@ public class SkTransException extends RuntimeException {
         errorCodes.put(ErrorCode.GEOTRANS_ERROR_UNINITIALIZED_GEOIDE.value, "Fra rutinen GeoTrans når geoidefilen ikke er initiert");
     }
 
-    public SkTransException(ErrorCode code) {
+    public SkTransException(ErrorCode code, int sourceSosiCode, int destinationSosiCode, double x, double y, double z) {
         super(String.format("Transformasjon feilet med kode %d: %s", code.value, errorCodes.get(code.value)));
         this.errorCode = code;
+        this.sourceSosiCode = sourceSosiCode;
+        this.destinationSosiCode = destinationSosiCode;
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     public static boolean isError(int code) {
@@ -199,5 +209,25 @@ public class SkTransException extends RuntimeException {
             return errorCodes.get(code);
         }
         return null;
+    }
+
+    public int getSourceSosiCode() {
+        return sourceSosiCode;
+    }
+
+    public int getDestinationSosiCode() {
+        return destinationSosiCode;
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public double getZ() {
+        return z;
     }
 }
