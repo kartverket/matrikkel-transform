@@ -7,10 +7,11 @@ STRIP = strip
 LINKOBJ  = SosiTransformasjon.o
 # LIBS = --no-export-all-symbols
 CFLAGS += -O3 -I"${JAVA_HOME}/include"
-PREFIX ?= ../../all/lib.native64bit
+PREFIX ?= ../lib
 DLL = SosiTransformasjon.dll
 SO = libsositrans.so
 SKTLAN_ARCHIVE = libskt2lan2.a
+GCC_HOME ?= /opt/gcc-9.2.0
 
 ifeq ($(OS),Windows_NT)
 	SHAREDLIB = $(DLL)
@@ -24,7 +25,7 @@ else
 	SHAREDLIB = $(SO)
 	BIN = $(LINBIN)
 	CFLAGS += -I"${JAVA_HOME}/include/linux" -fPIC
-	LDFLAGS = -fPIC -shared -static-libgcc -lc -lm $(SKTLAN_ARCHIVE) /opt/gcc-8.3.0/lib64/libquadmath.a /opt/gcc-8.3.0/lib64/libgfortran.a
+	LDFLAGS = -fPIC -shared -static-libgcc -lc -lm $(SKTLAN_ARCHIVE) $(GCC_HOME)/lib64/libquadmath.a $(GCC_HOME)/lib64/libgfortran.a
 #	LDFLAGS = -shared -static-libgcc -static-libgfortran -L. -Wl,--whole-archive -lskt2lan2 -lgfortran -lquadmath -lm -Wl,--no-whole-archive
 	INSTALLFILES = $(SHAREDLIB)
 endif
