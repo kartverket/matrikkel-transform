@@ -59,7 +59,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                docker.image("nexus.statkart.no:8083/gfortran-builder:latest").withRun(mounts()) {
+                withDockerContainer(image: "nexus.statkart.no:8083/gfortran-builder:latest", args: mounts()) {
                     dir("/src/skt2lan2") {
                         sh "make -f Makefile.static"
                         sh "install -m 644 libsk2lan2.a ../transform"
