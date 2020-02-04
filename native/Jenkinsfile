@@ -1,16 +1,16 @@
 def baseVersion = "1.4.7"
 
-def mountDefs = [
-    "native": "/src/transform",
-    "skt2lan2/src": "/src/skt2lan"
-]    
+// def mountDefs = [
+//     "native": "/src/transform",
+//     "skt2lan2/src": "/src/skt2lan"
+// ]    
 
-def mounts() {
-    sep = " --mount "
-    return sep + mountDefs.collect { k, v ->
-        return "type=bind,src=${k},dst=${v}"
-    }.join(sep)
-}
+// def mounts() {
+//     sep = " --mount "
+//     return sep + mountDefs.collect { k, v ->
+//         return "type=bind,src=${k},dst=${v}"
+//     }.join(sep)
+// }
 
 pipeline {
 
@@ -59,12 +59,15 @@ pipeline {
 
         stage('Build') {
             steps {
-                withDockerContainer(image: "nexus.statkart.no:8083/gfortran-builder:latest", args: mounts()) {
+                withDockerContainer(
+                    image: "nexus.statkart.no:8083/gfortran-builder:latest",
+                    args: "--mount 'type=bind,src=${WORKSPACE}/native,dst=/src/native' --mount 'type=bind,src=${WORKSPACE}/skt2lan2,dst=/src/skt2lan2'"
+                ) {
                     dir("/src/skt2lan2") {
                         sh "make -f Makefile.static"
-                        sh "install -m 644 libsk2lan2.a ../transform"
+                        sh "install -m 644 libsk2lan2.a ../native"
                     }
-                    dir("/src/transform") {
+                    dir("/src/native") {
                         sh "make"
                         sh "tar cJvf transform-native-linux-`uname -m`-${BUILD_NUMBER}.tar.xz libsositrans.so libskt2lan2.a"
                         cifsPublisher(
@@ -83,7 +86,7 @@ pipeline {
                                     remoteDirectory: 'transform', 
                                     remoteDirectorySDF: false, 
                                     removePrefix: '', 
-                                    sourceFiles: '/src/transform/transform-native-linux-*.tar.xz'
+                                    sourceFiles: '/src/native/transform-native-linux-*.tar.xz'
                                 ]], 
                                 usePromotionTimestamp: false, 
                                 useWorkspaceInPromotion: false, 
