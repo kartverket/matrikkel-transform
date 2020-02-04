@@ -27,10 +27,6 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-    parameters {
-        choice(name: "SETUP", choices: setupNames, description: "Velg oppsett")
-    }
-
     stages {
         stage('NotifyStarted') {
             steps {
