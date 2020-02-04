@@ -1,0 +1,98 @@
+def baseVersion = "1.4.7"
+
+def mountDefs = [
+    "native": "/src/transform",
+    "skt2lan2/src": "/src/skt2lan"
+]    
+
+def mounts() {
+    sep = " --mount "
+    return sep + mountDefs.collect { k, v ->
+        return "type=bind,src=${k},dst=${v}"
+    }.join(sep)
+}
+
+pipeline {
+
+    agent {
+        node {
+            label 'docker-builder-stor'
+        }
+    }
+
+
+    options {
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+
+    parameters {
+        choice(name: "SETUP", choices: setupNames, description: "Velg oppsett")
+    }
+
+    stages {
+        stage('NotifyStarted') {
+            steps {
+                sendNotifications('STARTED', 'gb-docker')
+            }
+        }
+    
+        stage('Checkout skt2lan2') {
+            steps {
+                dir('skt2lan2') {
+                    checkout(
+                        [
+                            $class: 'GitSCM',
+                            branches: [[name: "master"]],
+                            userRemoteConfigs: [
+                                [
+                                    credentialsId: '2c90ed8a-1f70-41f3-92e9-ce54dbd353c7',
+                                    url: 'ssh://git@bitbucket.statkart.no:7999/mat/matrikkel.git'
+                                ]
+                            ]
+                        ]
+                    )
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                docker.image("nexus.statkart.no:8083/gfortran-builder:latest").withRun(mounts()) {
+                    dir("/src/skt2lan2") {
+                        sh "make -f Makefile.static"
+                        sh "install -m 644 libsk2lan2.a ../transform"
+                    }
+                    dir("/src/transform") {
+                        sh "make"
+                        sh "tar cJvf transform-native-linux-`uname -m`-${BUILD_NUMBER}.tar.xz libsositrans.so libskt2lan2.a"
+                        cifsPublisher(
+                            alwaysPublishFromMaster: false,
+                            continueOnError: false,
+                            failOnError: false,
+                            publishers: [[
+                                configName: 'devbin',
+                                transfers: [[
+                                    cleanRemote: false, 
+                                    excludes: '', 
+                                    flatten: false, 
+                                    makeEmptyDirs: false, 
+                                    noDefaultExcludes: false, 
+                                    patternSeparator: '[, ]+', 
+                                    remoteDirectory: 'transform', 
+                                    remoteDirectorySDF: false, 
+                                    removePrefix: '', 
+                                    sourceFiles: '/src/transform/transform-native-linux-*.tar.xz'
+                                ]], 
+                                usePromotionTimestamp: false, 
+                                useWorkspaceInPromotion: false, 
+                                verbose: true
+                            ]]
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
