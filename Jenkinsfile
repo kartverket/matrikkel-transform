@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        jdk 'Java 8 Latest'
+        jdk 'Java 12 Latest'
     }
     options {
         timestamps()
