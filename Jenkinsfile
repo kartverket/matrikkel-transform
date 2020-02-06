@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        node {
+            label "matrikkel-utils"
+        }
+    }
     tools {
         jdk 'Java 12 Latest'
     }
@@ -14,17 +18,17 @@ pipeline {
     stages{
         stage('Clean') {
             steps {
-                bat "./gradlew ${gradleOptions} clean"
+                sh "./gradlew ${gradleOptions} clean"
             }
         }
         stage('Assemble') {
             steps {
-                bat "./gradlew ${gradleOptions} assemble"
+                sh "./gradlew ${gradleOptions} assemble"
             }
         }
         stage('Test') {
             steps {
-                bat "./gradlew ${gradleOptions} -DignoreFailures=true test"
+                sh "./gradlew ${gradleOptions} -DignoreFailures=true test"
             }
         }
     }
