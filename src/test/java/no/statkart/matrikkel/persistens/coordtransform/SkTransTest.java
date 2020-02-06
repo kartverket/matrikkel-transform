@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 /**
@@ -14,6 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SkTransTest {
    public SkTrans getSkTrans() {
       return SkTransFactory.getInstance();
+   }
+
+   public SkTrans getZIgnoringSkTrans() {
+      return SkTransFactory.getZIgnoringInstance();
    }
 
    static class Position {
@@ -231,5 +236,34 @@ public class SkTransTest {
       double[] transformert15 = getSkTrans().transform(219983.05, 12242.26, 0, 3, 22);
       double[] transformert16 = getSkTrans().transform(220011.04, 12207.99, 0, 3, 22);
       double[] transformert17 = getSkTrans().transform(219983.05, 12242.26, 0, 3, 22);
+   }
+
+   @Test
+   public void testNegativeLimit() {
+      getSkTrans().transform(219983.05, 12242.26, -500, 22, 84);
+      assertThatThrownBy(()->getSkTrans().transform(219983.05, 12242.26, -501, 22, 84))
+              .isInstanceOf(SkTransException.class)
+              .hasMessage("Transformasjon feilet med kode 19: X eller Y-verdi utenfor område");
+   }
+
+   @Test
+   public void testThatZIgnoringInstanceReturnsZUnTouched() {
+      int z = -501;
+      assertThat(getZIgnoringSkTrans().transform(219983.05, 12242.26, z, 22, 84)).endsWith(z);
+   }
+
+   @Test
+   public void testThatZIgnoringInstanceIsSeparateFromNormal() {
+      assertThat(getZIgnoringSkTrans()).isNotSameAs(getSkTrans());
+   }
+
+   @Test
+   public void testThatZIgnoringInstancesAreSame() {
+      assertThat(getZIgnoringSkTrans()).isSameAs(getZIgnoringSkTrans());
+   }
+
+   @Test
+   public void testThatPlainInstancesAreSame() {
+      assertThat(getSkTrans()).isSameAs(getSkTrans());
    }
 }

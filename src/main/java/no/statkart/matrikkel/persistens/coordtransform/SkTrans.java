@@ -50,6 +50,13 @@ public class SkTrans {
             new Filename("Milne_north.bin"),
             new Filename("RH2000LU_absup.bin"),
     };
+    private boolean ignoreZ = false;
+
+    public static SkTrans zIgnoringInstance() {
+        SkTrans transformer = new SkTrans();
+        transformer.ignoreZ = true;
+        return transformer;
+    }
 
     private native int xSosiTrans(int fraKoordSys, double fraX, double fraY, double fraH, int tilKoordSys, double[] returTall);
     private native boolean initialize(String init_path);
@@ -255,7 +262,14 @@ public class SkTrans {
     }
 
     private void xSosiTransWrapper(int fraKoordSys, double fraX, double fraY, double fraH, int tilKoordSys, double[] returTall) {
-        int res = xSosiTrans(fraKoordSys, fraX, fraY, fraH, tilKoordSys, returTall);
+        int res;
+        if (ignoreZ) {
+            double z = 0;
+            res = xSosiTrans(fraKoordSys, fraX, fraY, z, tilKoordSys, returTall);
+            returTall[2] = fraH;
+        } else {
+            res = xSosiTrans(fraKoordSys, fraX, fraY, fraH, tilKoordSys, returTall);
+        }
         if (logger.isDebugEnabled()) {
             logger.debug(fraKoordSys + ": (" + fraX + ", " + fraY + ") -> " + tilKoordSys + ": (" + returTall[0] + ", " + returTall[1] + ") [" + res + "]");
         }
