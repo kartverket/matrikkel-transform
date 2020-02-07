@@ -7,6 +7,10 @@ pipeline {
         }
     }
 
+    tools {
+        jdk 'Java 12 Latest'
+    }
+
     parameters {
         string(name: "tag", description: "Tag / versjon som skal publiseres (spesifiser kun tag her). Husk å sette versjon i build.gradle og tagge med samme versjon først!")
     }
