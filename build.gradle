@@ -46,12 +46,14 @@ publishing {
         }
     }
 
-    repositories {
-        maven {
-            url = "https://nexus.statkart.no/repository/releases/"
-            credentials {
-                username = "$deployUser"
-                password = "$deployPassword"
+    if (project.hasProperty("deployUser") && project.hasProperty("deployPassword")) {
+        repositories {
+            maven {
+                url = "https://nexus.statkart.no/repository/releases/"
+                credentials {
+                    username = "$deployUser"
+                    password = "$deployPassword"
+                }
             }
         }
     }
