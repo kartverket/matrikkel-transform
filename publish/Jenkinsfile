@@ -37,7 +37,7 @@ pipeline {
                     $class: "GitSCM",
                     branches: [[name: "refs/tags/${tag}"]],
                     userRemoteConfigs: [[
-                        url: "ssh://git@bitbucket.statkart.no:7999/gbok/matrikkel-transform.git"
+                        url: "ssh://git@bitbucket.statkart.no:7999/mat/matrikkel-transform.git"
                     ]]
                 ])
             }
