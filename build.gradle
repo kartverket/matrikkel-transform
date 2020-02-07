@@ -45,16 +45,13 @@ publishing {
             from components.java
         }
     }
+
     repositories {
-        String mavenUpload = System.getenv('MAVEN_PUBLISH')
         maven {
-            if (mavenUpload) {
-                String creds = mavenUpload.split('@|//').getAt(1)
-                url mavenUpload.replace(creds.concat('@'), '') // url kommer i konsoll - ikke ha credentials der
-                credentials {
-                    username creds.split(':').getAt(0) ?: ""
-                    password creds.split(':').getAt(1) ?: ""
-                }
+            url = "https://nexus.statkart.no/repository/releases/"
+            credentials {
+                username = "$deployUser"
+                password = "$deployPassword"
             }
         }
     }
