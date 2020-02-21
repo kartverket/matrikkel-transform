@@ -58,7 +58,7 @@ public class SkTrans {
         return transformer;
     }
 
-    private native int xSosiTrans(int fraKoordSys, double fraX, double fraY, double fraH, int tilKoordSys, double[] returTall);
+    private native int xSosiTrans(int fraKoordSys, double nord, double ost, double hoyde, int tilKoordSys, double[] returTall);
     private native boolean initialize(String init_path);
     private native String getLastError();
 
@@ -265,13 +265,13 @@ public class SkTrans {
         int res;
         if (ignoreZ) {
             double z = 0;
-            res = xSosiTrans(fraKoordSys, fraX, fraY, z, tilKoordSys, returTall);
+            res = xSosiTrans(fraKoordSys, fraY, fraX, z, tilKoordSys, returTall);
             returTall[2] = fraH;
         } else {
-            res = xSosiTrans(fraKoordSys, fraX, fraY, fraH, tilKoordSys, returTall);
+            res = xSosiTrans(fraKoordSys, fraY, fraX, fraH, tilKoordSys, returTall);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug(fraKoordSys + ": (" + fraX + ", " + fraY + ") -> " + tilKoordSys + ": (" + returTall[0] + ", " + returTall[1] + ") [" + res + "]");
+            logger.debug(fraKoordSys + ": (" + fraX + ", " + fraY + ") -> " + tilKoordSys + ": (" + returTall[1] + ", " + returTall[0] + ") [" + res + "]");
         }
         if (SkTransException.isError(res)) {
             throw new SkTransException(SkTransException.ErrorCode.fromInt(res), fraKoordSys, tilKoordSys, fraX, fraY, fraH);
@@ -298,9 +298,7 @@ public class SkTrans {
         }
 
         synchronized (SkTrans.class) {
-            //I native biblioteket(skTrans) forventes det at koordinatene er i Nord Øst format, derfor kalles den med y, x, z
-            //noinspection SuspiciousNameCombination
-            xSosiTransWrapper(fraSosiSys, y, x, z, tilSosiSys, transformert);
+            xSosiTransWrapper(fraSosiSys, x, y, z, tilSosiSys, transformert);
         }
         return transformert;
     }
@@ -324,8 +322,7 @@ public class SkTrans {
             double[] transformert = new double[3];
             synchronized (SkTrans.class) {
                 for (int i = 0; i < in.length; i += dimensions) {
-                    // Note: rekkefølgen er y,x,z
-                    xSosiTransWrapper(fraSosiSys, in[i + 1], in[i], (dimensions == 3) ? in[i + 2] : 0d, tilSosiSys, transformert);
+                    xSosiTransWrapper(fraSosiSys, in[i], in[i + 1], (dimensions == 3) ? in[i + 2] : 0d, tilSosiSys, transformert);
                     out[i] = transformert[1];
                     out[i + 1] = transformert[0];
                     if (dimensions == 3) {
