@@ -50,6 +50,14 @@ public class SkTrans {
             new Filename("Milne_north.bin"),
             new Filename("RH2000LU_absup.bin"),
     };
+
+    /**
+     * EUREFGeo opererer i sekunder, mens vi i vår kode og i databasen er interessert i grader.
+     * Vi må derfor gange opp før transformering og så dele ned igjen etterpå
+     */
+    private static final int SECONDS = 3600;
+    private static final int EUREFGEO = 84;
+
     private boolean ignoreZ = false;
 
     public static SkTrans zIgnoringInstance() {
@@ -261,46 +269,51 @@ public class SkTrans {
         return attempt.toAbsolutePath().toString();
     }
 
-    private void xSosiTransWrapper(int fraKoordSys, double fraX, double fraY, double fraH, int tilKoordSys, double[] returTall) {
+    private Coordinate xSosiTransWrapper(int fraKoordSys, double oest, double nord, double fraH, int tilKoordSys) {
         int res;
+        double[] returTall = new double[3];
+        if (fraKoordSys == EUREFGEO) {
+            nord *= SECONDS;
+            oest *= SECONDS;
+        }
         if (ignoreZ) {
             double z = 0;
-            res = xSosiTrans(fraKoordSys, fraY, fraX, z, tilKoordSys, returTall);
+            res = xSosiTrans(fraKoordSys, nord, oest, z, tilKoordSys, returTall);
             returTall[2] = fraH;
         } else {
-            res = xSosiTrans(fraKoordSys, fraY, fraX, fraH, tilKoordSys, returTall);
+            res = xSosiTrans(fraKoordSys, nord, oest, fraH, tilKoordSys, returTall);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug(fraKoordSys + ": (" + fraX + ", " + fraY + ") -> " + tilKoordSys + ": (" + returTall[1] + ", " + returTall[0] + ") [" + res + "]");
+            logger.debug(fraKoordSys + ": (" + oest + ", " + nord + ") -> " + tilKoordSys + ": (" + returTall[1] + ", " + returTall[0] + ") [" + res + "]");
         }
         if (SkTransException.isError(res)) {
-            throw new SkTransException(SkTransException.ErrorCode.fromInt(res), fraKoordSys, tilKoordSys, fraX, fraY, fraH);
+            throw new SkTransException(SkTransException.ErrorCode.fromInt(res), fraKoordSys, tilKoordSys, oest, nord, fraH);
         }
+        if (tilKoordSys == EUREFGEO) {
+            returTall[0] /= SECONDS;
+            returTall[1] /= SECONDS;
+        }
+        return new Coordinate(returTall[1], returTall[0], returTall[2]);
     }
 
     /**
      * Kaller dll via JNI for å utføre transformasjon av koordinater.
      *
-     * @param y             y-koordinat som skal transformeres
      * @param x             x-koordinat som skal transformeres
+     * @param y             y-koordinat som skal transformeres
      * @param z             z-koordinat som skal transformeres
      * @param sosiFraSystem sosi-kode for koordinatsystem som y, x og z
      * @param sosiTilSystem sosi-kode for koordinatsystem som koordinatene skal transformeres til
      * @return et array med de transformerte koordinatene; [y, x, z]
      */
-    public synchronized double[] transform(double y, double x, double z, int sosiFraSystem, int sosiTilSystem) {
-        short fraSosiSys = (short) sosiFraSystem;
-        short tilSosiSys = (short) sosiTilSystem;
-        double[] transformert = new double[3];
-
+    public synchronized Coordinate transform(double x, double y, double z, int sosiFraSystem, int sosiTilSystem) {
         if (!Double.isFinite(x) || !Double.isFinite(y)) {
             throw new RuntimeException("Transformasjon kalles med ugyldige tall som transformasjonsverdier! x: " + x + ", y: " + y + ", z: " + z);
         }
 
         synchronized (SkTrans.class) {
-            xSosiTransWrapper(fraSosiSys, x, y, z, tilSosiSys, transformert);
+            return xSosiTransWrapper(sosiFraSystem, x, y, z, sosiTilSystem);
         }
-        return transformert;
     }
 
     /**
@@ -312,25 +325,18 @@ public class SkTrans {
      * @param sosiTilSystem sosi-kode for koordinatsystem som koordinatene skal transformeres til
      * @return et array med de transformerte koordinatene: [x1,y1,z1,...,xN,yN,zN] eller [x1,y1...,xN,yN]
      */
-    public double[] transform(double[] in, final int dimensions, int sosiFraSystem, int sosiTilSystem) {
-        if (sosiFraSystem == sosiTilSystem) {
-            return in;
-        } else {
-            short fraSosiSys = (short) sosiFraSystem;
-            short tilSosiSys = (short) sosiTilSystem;
-            double[] out = new double[in.length];
-            double[] transformert = new double[3];
-            synchronized (SkTrans.class) {
-                for (int i = 0; i < in.length; i += dimensions) {
-                    xSosiTransWrapper(fraSosiSys, in[i], in[i + 1], (dimensions == 3) ? in[i + 2] : 0d, tilSosiSys, transformert);
-                    out[i] = transformert[1];
-                    out[i + 1] = transformert[0];
-                    if (dimensions == 3) {
-                        out[i + 2] = transformert[2];
-                    }
+    public Coordinate[] transform(double[] in, final int dimensions, int sosiFraSystem, int sosiTilSystem) {
+        Coordinate[] result = new Coordinate[in.length / dimensions];
+        int resultIndex = 0;
+        for (int i = 0; i < in.length; i += dimensions) {
+            if (sosiFraSystem == sosiTilSystem) {
+                result[resultIndex++] = new Coordinate(in[i], in[i + 1], dimensions == 3 ? in[i + 2] : Double.NaN);
+            } else {
+                synchronized (SkTrans.class) {
+                    result[resultIndex++] = xSosiTransWrapper(sosiFraSystem, in[i], in[i + 1], (dimensions == 3) ? in[i + 2] : Double.NaN, sosiTilSystem);
                 }
             }
-            return out;
         }
+        return result;
     }
 }
