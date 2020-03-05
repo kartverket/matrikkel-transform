@@ -306,4 +306,12 @@ public class SkTransTest {
               .usingRecursiveComparison()
               .isEqualTo(new Coordinate(514390.0, 8683370.0, 0.00));
    }
+
+   @Test
+   public void testThatExceptionCoordinatesArentMultipliedWith3600() {
+      assertThatThrownBy(() -> getZIgnoringSkTrans().transform(2, 3, 0, 84, 3))
+              .isInstanceOf(SkTransException.class)
+              .extracting("x", "y")
+              .containsExactly(2.0, 3.0);
+   }
 }

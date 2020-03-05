@@ -272,6 +272,8 @@ public class SkTrans {
     private Coordinate xSosiTransWrapper(int fraKoordSys, double oest, double nord, double fraH, int tilKoordSys) {
         int res;
         double[] returTall = new double[3];
+        double origNord = nord;
+        double origOest = oest;
         if (fraKoordSys == EUREFGEO) {
             nord *= SECONDS;
             oest *= SECONDS;
@@ -287,7 +289,7 @@ public class SkTrans {
             logger.debug(fraKoordSys + ": (" + oest + ", " + nord + ") -> " + tilKoordSys + ": (" + returTall[1] + ", " + returTall[0] + ") [" + res + "]");
         }
         if (SkTransException.isError(res)) {
-            throw new SkTransException(SkTransException.ErrorCode.fromInt(res), fraKoordSys, tilKoordSys, oest, nord, fraH);
+            throw new SkTransException(SkTransException.ErrorCode.fromInt(res), fraKoordSys, tilKoordSys, origOest, origNord, fraH);
         }
         if (tilKoordSys == EUREFGEO) {
             returTall[0] /= SECONDS;
