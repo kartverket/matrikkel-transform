@@ -143,19 +143,28 @@ public class SkTrans {
             int counter = 1;
             while (true) {
                 Path libraryPath = Paths.get(libraryPathName, INSTALL_DIRECTORY_INFIX, String.valueOf(counter));
-                if (Files.exists(libraryPath)) {
+                if (createDirectoryAtomicallyOrFail(libraryPath.subpath(0, 1))) {
+                    buildPath(libraryPath);
+                    loadLibraryOrCroak();
+                    return;
+                } else {
                     if (testPath(libraryPath) && tryLoadLibrary()) {
                         return;
                     }
                     counter++;
-                } else {
-                    buildPath(libraryPath);
-                    loadLibraryOrCroak();
-                    return;
                 }
             }
         }
         throw new RuntimeException("Reached unreachable state");
+    }
+
+    private boolean createDirectoryAtomicallyOrFail(Path path) {
+        try {
+            Files.createDirectory(path);
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
     private boolean testPath(Path path) {
