@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -166,8 +167,10 @@ public class SkTrans {
     private boolean createDirectoryAtomicallyOrFail(Path path) {
         try {
             Files.createDirectory(path);
-        } catch (IOException e) {
+        } catch (FileAlreadyExistsException e) {
             return false;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         return true;
     }
