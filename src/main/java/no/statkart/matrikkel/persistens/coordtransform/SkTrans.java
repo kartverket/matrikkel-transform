@@ -141,9 +141,14 @@ public class SkTrans {
                 throw new RuntimeException("Neither java.io.tmpdir nor no.statkart.matrikkel.transform.library.path is set, cannot continue");
             }
             int counter = 1;
+            try {
+                Files.createDirectories(Paths.get(libraryPathName, INSTALL_DIRECTORY_INFIX));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to create base directories", e);
+            }
             while (true) {
                 Path libraryPath = Paths.get(libraryPathName, INSTALL_DIRECTORY_INFIX, String.valueOf(counter));
-                if (createDirectoryAtomicallyOrFail(libraryPath.subpath(0, 1))) {
+                if (createDirectoryAtomicallyOrFail(libraryPath)) {
                     buildPath(libraryPath);
                     loadLibraryOrCroak();
                     return;
@@ -214,13 +219,6 @@ public class SkTrans {
     }
 
     private void buildPath(Path path) {
-        try {
-            Files.createDirectories(path);
-            logger.info("Created SkTrans directory {}", path.getFileName());
-        } catch (IOException e) {
-            logger.error("Failed to create directory {}", path.toString(), e);
-            throw new RuntimeException(e);
-        }
         try {
             copyFiles(path);
         } catch (RuntimeException e) {
