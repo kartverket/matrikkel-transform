@@ -32,7 +32,7 @@ pipeline {
                             userRemoteConfigs: [
                                 [
                                     credentialsId: 'Github-app-matrikkel',
-                                    url: 'ssh://git@github.com:kartverket/matrikkel-skt2lan2.git'
+                                    url: 'https://github.com/kartverket/matrikkel-skt2lan2.git'
                                 ]
                             ]
                         ]
