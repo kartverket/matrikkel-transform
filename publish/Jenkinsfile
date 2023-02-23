@@ -42,7 +42,7 @@ pipeline {
                     branches: [[name: "refs/tags/${params.tag}"]],
                     userRemoteConfigs: [[
                         credentialsId: 'Github-app-matrikkel',
-                        url: "ssh://git@github.com:kartverket/matrikkel-transform.git"
+                        url: "git@github.com:kartverket/matrikkel-transform.git"
                     ]]
                 ])
             }
