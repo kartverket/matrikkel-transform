@@ -32,7 +32,7 @@ pipeline {
                             userRemoteConfigs: [
                                 [
                                     credentialsId: 'Github-app-matrikkel',
-                                    url: 'git@github.com:kartverket/matrikkel-transform.git'
+                                    url: 'https://github.com/kartverket/matrikkel-transform.git'
                                 ]
                             ]
                         ]
