@@ -31,8 +31,8 @@ pipeline {
                             branches: [[name: "master"]],
                             userRemoteConfigs: [
                                 [
-                                    credentialsId: '2c90ed8a-1f70-41f3-92e9-ce54dbd353c7',
-                                    url: 'ssh://git@bitbucket.statkart.no:7999/mat/skt2lan2.git'
+                                    credentialsId: 'Github-app-matrikkel',
+                                    url: 'ssh://git@github.com:kartverket/matrikkel-transform.git'
                                 ]
                             ]
                         ]
