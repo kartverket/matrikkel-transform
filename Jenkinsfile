@@ -5,7 +5,7 @@ pipeline {
         }
     }
     tools {
-        jdk 'Java 12 Latest'
+        jdk 'Java 11 Latest'
     }
     options {
         timestamps()
