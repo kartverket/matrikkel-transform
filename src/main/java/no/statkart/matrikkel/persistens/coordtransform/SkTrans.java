@@ -21,16 +21,24 @@ import java.util.Arrays;
  * Klasse som kommuniserer med transformasjonsbiblioteket via et jni-kall.
  */
 public class SkTrans {
+
+    private enum OsType {
+        WINDOWS, LINUX, DARWIN
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(SkTrans.class);
     private static final String INSTALL_DIRECTORY_INFIX = "statkart/matrikkelen";
-    private static boolean isOnLinux = System.getProperty("os.name").equals("Linux");
     private static final String DIGEST_ALGORITHM = "SHA-256";
     private static final String TRANSFORMATION_INIT_DIR_NAME = "transformation_init";
     private static final String LIB_DIR_NAME = "lib";
-    private static Filename linuxLibrary = new Filename("libsositrans.so");
-    private static Filename windowsLibrary = new Filename("SosiTransformasjon.dll");
-    private static Filename[] libraries = {
+    private static final Filename linuxLibrary = new Filename("libsositrans.so");
+
+    //darwinLibrary filen består av samme "kode" som linuxLibrary, men er compilet på en mac "silicon" maskin (da med gcc 12 og ikke gcc 9).
+    private static final Filename darwinLibrary = new Filename("libsositrans.jnilib");
+    private static final Filename windowsLibrary = new Filename("SosiTransformasjon.dll");
+    private static final Filename[] libraries = {
             linuxLibrary,
+            darwinLibrary,
             windowsLibrary,
             new Filename("libifcoremd.dll"),
             new Filename("libmmd.dll"),
@@ -68,12 +76,27 @@ public class SkTrans {
     }
 
     private native int xSosiTrans(int fraKoordSys, double nord, double ost, double hoyde, int tilKoordSys, double[] returTall);
+
     private native boolean initialize(String init_path);
+
     private native String getLastError();
 
     SkTrans() {
         setupAndLoadLibrary();
         initializeLibrary();
+    }
+
+    private static OsType getOS() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("win")) {
+            return OsType.WINDOWS;
+        } else if (osName.equals("linux")) {
+            return OsType.LINUX;
+        } else if (osName.contains("mac")) {
+            return OsType.DARWIN;
+        }
+
+        throw new RuntimeException(String.format("Transformation library initialization failed, could not recognize operating system: %s", osName));
     }
 
     private static void copyFile(String dir, Filename filename, Path destination) {
@@ -268,7 +291,15 @@ public class SkTrans {
     }
 
     private Filename getTransformationLibrary() {
-        return isOnLinux ? linuxLibrary : windowsLibrary;
+        switch (getOS()) {
+            case LINUX:
+                return linuxLibrary;
+            case DARWIN:
+                return darwinLibrary;
+            case WINDOWS:
+                return windowsLibrary;
+        }
+        throw new RuntimeException("Transformation library initialization failed, could not recognize operating system");
     }
 
     private String initFilePath() {
