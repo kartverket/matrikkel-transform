@@ -11,7 +11,6 @@ PREFIX ?= ../lib
 DLL = SosiTransformasjon.dll
 SO = libsositrans.so
 SKTLAN_ARCHIVE = libskt2lan2.a
-GCC_HOME ?= /opt/gcc-9.2.0
 
 ifeq ($(OS),Windows_NT)
 	SHAREDLIB = $(DLL)
@@ -20,7 +19,19 @@ ifeq ($(OS),Windows_NT)
 	STATICLIB = libSosiTransformasjon.a
 	LDFLAGS = -shared -Wl,--out-implib,$(STATICLIB)
 	INSTALLFILES = $(STATICLIB) $(SHAREDLIB)
+
+## BRUKES FOR MAC OPPSETT, lager libsositrans.jnilib
+# else
+# 	GCC_HOME ?= /opt/homebrew/Cellar/gcc/12.2.0/lib/gcc/12/
+# 	CC = /opt/homebrew/bin/gcc-12
+# 	SO = libsositrans.jnilib
+# 	SHAREDLIB = $(SO)
+# 	BIN = $(LINBIN)
+# 	CFLAGS += -I $(JAVA_HOME)/include -I ${JAVA_HOME}/include/darwin
+# 	LDFLAGS = -fPIC -shared -static-libgcc -lc -lm $(SKTLAN_ARCHIVE) $(GCC_HOME)/libquadmath.a $(GCC_HOME)/libgfortran.a
+# 	INSTALLFILES = $(SHAREDLIB)
 else
+	GCC_HOME ?= /opt/gcc-9.2.0
 	JAVA_HOME ?= /opt/java/jdk
 	SHAREDLIB = $(SO)
 	BIN = $(LINBIN)

@@ -124,3 +124,89 @@ til `SosiTransformasjon.dll`, og den kan da kjøres i `valgrind`:
 På denne måten får man altså ikke testet JNI-funksjonaliteten eller
 Windows-native kode, og denne bør derfor etterstrebes å holdes til et
 minimum.
+
+---
+
+# Lokal bygg+kjøring av matrikkel-transform /-native /-skt2lan2 på Mac med M.1 chip
+
+**Disclaimer: Denne oppskriften vil beskrive byggstegene for Mac med m.1 chip, men med mindre justeringer så skal det fungere for ditt system.**
+
+For å få matrikkelen til å kjøre på lokalt på en maskin med komplett lokalt bygg av matrikkel-transform, så er det noe native kode som må bygges.
+I denne seksjonen vil byggestegene av matrikkel-transform og dens avhengigheter beskrives.
+
+Byggstegene er gjeldene for uansett plattform, men i matrikkel-transform/native så må [Makefile](../native/Makefile) tweakes slik at riktig byggfil bygges:
+
+* libsositrans.jnilib → Mac
+* libsositrans.so  → linux
+* SosiTransformasjon.dll → windows
+
+Avhengighetene ser slik ut prosjekt + filer:
+
+`matrikkel-transform` → `matrikkel-transform/native` → `matrikkel-skt2lan2`
+
+`transform.jar` → `libsositrans.jnilib`/`libsositrans.so`/`SosiTransformasjon.dll` → `libskt2lan2.a`
+
+---
+
+
+Først sørg for at gcc@12 er installert med `brew install gcc@12` og se at gcc pathene i [*Kartverket/matrikkel-transform/native/Makefile](../native/Makefile) blir riktig
+
+Videre så kan det være greit å ha følgende mappestruktur:
+
+    */Kartverket                    # Kan hete hva som helst
+    ├── matrikkel                   # https://github.com/kartverket/matrikkel
+    ├── matrikkel-skt2lan2          # https://github.com/kartverket/matrikkel-skt2lan2
+    └── matrikkel-transform         # https://github.com/kartverket/matrikkel-transform
+
+
+## Avhengigheter
+### matrikkel-skt2lan2
+
+matrikkel-transform/native er avhengig av `libskt2lan2.a` som bygges i [matrikkel-skt2lan2](https://github.com/kartverket/matrikkel-skt2lan2).
+Pga. hvilke versjoner av GCC som finnes for Mac M1 med silicon chip er skt2lan2 bygget med gcc 12. For å få igjennom warningene som kommer, sett  `FCOMP` i Makefile.static.
+
+` FCOMP = gfortran -fallow-argument-mismatch`
+
+**Bygg matrikkel-skt2lan2 → libskt2lan2.a:** 
+```
+ cd matrikkel-skt2lan2/src
+ make -f Makefile.static
+```
+
+### matrikkel-transform/native
+
+Etter at libskt2lan2.a er bygget må den installeres inn i matrikkel-transform/native.
+```
+ install -m 644 libskt2lan2.a ../../matrikkel-transform/native`
+```
+
+Nå kan matrikkel-transform/native bygges basert på hvilken del av [Makefile](../native/Makefile) man kjører.
+Pr. nå er delen som bygger Mac koden kommentert ut. Kommenter den inn, sjekk GCC path, og ta vekk det som først sto original "else"
+
+**Bygg matrikkel-transform/native → libsositrans.jnilib**
+```
+ cd matrikkel-transform/native
+ make
+```
+
+### matrikkel-transform
+Etter at `libsositrans.jnilib` er bygget flyttes til [lib](../lib) mappen.
+
+```
+ mv libsositrans.jnilib ../lib/libsositrans.jnilib
+```
+
+**Bygg matrikkel-transform  → transform.jar**
+```
+./gradlew --no-daemon --info assemble
+```
+
+# For mac, full verdikjede ser slik ut:
+* `cd */Kartverket/matrikkel-skt2lan2/src`
+* `make -f Makefile.static` ved feil mellom bygg kjør `make -f Makefile.static distclean`
+* `install -m 644 libskt2lan2.a ../../matrikkel-transform/native`
+* `cd ../../matrikkel-transform/native`
+* `make`
+* `mv libsositrans.jnilib ../lib/libsositrans.jnilib`
+* `cd ..`
+* `./gradlew --no-daemon --info assemble`
