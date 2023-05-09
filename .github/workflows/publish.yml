@@ -1,0 +1,65 @@
+name: Publish package to GitHub Packages
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Settes hvis du ønsker å overstyre versjonsnummeret og publishe f.eks. en rc-kandidat uten at det lages tag.
+                      Hvis den ikke er satt blir default versjon i build.gradle brukt'
+jobs:
+  build:
+    name: Build branch
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build.yml
+  publish:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Extract tag
+        id: tag
+        shell: bash
+        run: |
+          project_version=$(./gradlew properties -q | grep "^version:" | awk '{print $2}')
+          potential_input_tag=${{ github.event.inputs.version }}
+          echo "version=${potential_input_tag:-$project_version}" >> $GITHUB_OUTPUT
+          echo "Using $GITHUB_OUTPUT as tag"
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+
+      - name: Publish package with input
+        if: ${{ github.event.inputs.version != '' }}
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: publish -Pversion=${{ steps.tag.outputs.version }}
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish package without input
+        if: ${{ github.event.inputs.version == '' }}
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: publish
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          TOKEN: ${{  secrets.GITHUB_TOKEN }}
+
+      - name: Push and release git tag
+        if: ${{ github.event.inputs.version == '' }}
+        run: |
+          git tag ${{ steps.tag.outputs.version }}
+          git push origin ${{ steps.tag.outputs.version }}
+          gh release create ${{ steps.tag.outputs.version }} --latest --generate-notes --title "v${{ steps.tag.outputs.version }}"
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

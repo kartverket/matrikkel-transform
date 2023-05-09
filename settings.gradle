@@ -1,9 +1,9 @@
-pluginManagement {
-    repositories {
-        maven {
-            url 'https://nexus.statkart.no/repository/public/'
-        }
-    }
-}
+//pluginManagement {
+//    repositories {
+//        maven {
+//            url 'https://nexus.statkart.no/repository/public/'
+//        }
+//    }
+//}
 
 rootProject.name = 'transform'

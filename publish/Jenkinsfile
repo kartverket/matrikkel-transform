@@ -62,13 +62,12 @@ pipeline {
 
         stage("Publish") {
             steps {
-                withCredentials([
-                        file(credentialsId: "kodesignering.p12", variable: "keystore"),
-                        usernamePassword(
-                                credentialsId: "kodesigneringp12",
-                                passwordVariable: "keystore_password",
-                                usernameVariable: "keystore_alias")]) {
-                    sh "./gradlew ${gradleOptions} ${deployOptions} publish"
+                withCredentials([usernamePassword(
+                                    credentialsId: 'matrikkel-pat-github',
+                                    usernameVariable: 'GITHUB_USER',
+                                    passwordVariable: 'GITHUB_TOKEN')
+                ]) {
+                    sh "./gradlew ${gradleOptions} ${deployOptions} publish --init-script config/gradle/scripts/mavenPublishGitHub.gradle"
                 }
             }
         }

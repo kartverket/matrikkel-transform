@@ -1,0 +1,33 @@
+name: Build branch
+on:
+  push:
+    branches:
+      - '**'
+  workflow_call:
+
+env:
+  GRADLE_OPTIONS: --no-daemon --info
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      -   uses: actions/checkout@v3
+      -   uses: actions/setup-java@v3
+          with:
+            java-version: '11'
+            distribution: 'temurin'
+
+      -   name: Setup Gradle
+          uses: gradle/gradle-build-action@v2
+
+      -   name: Clean
+          run: ./gradlew ${{env.GRADLE_OPTIONS}} clean
+
+      -   name: Assemble
+          run: ./gradlew ${{env.GRADLE_OPTIONS}} assemble
+
+      -   name: Unit test
+          run: ./gradlew ${{env.GRADLE_OPTIONS}} -DignoreFailures=true test
