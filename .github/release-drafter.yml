@@ -1,5 +1,0 @@
-name-template: 'v$RESOLVED_VERSION'
-tag-template: 'v$RESOLVED_VERSION'
-template: |
-  ## Hva er nytt?
-  $CHANGES
