@@ -3,8 +3,9 @@ plugins {
     id 'maven-publish'
 }
 
-version = '1.2.0'
 group = 'no.kartverket.matrikkel'
+
+project.version = project.findProperty('projectVersion') ?: '1.2.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -37,31 +38,9 @@ test {
 }
 
 publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/kartverket/matrikkel-transform")
-            credentials {
-                username = project.findProperty("USERNAME") ?: System.getenv("USERNAME")
-                password = project.findProperty("TOKEN") ?: System.getenv("TOKEN")
-            }
-        }
-    }
     publications {
         transform(MavenPublication) {
             from components.java
-        }
-    }
-
-    if (project.hasProperty("deployUser") && project.hasProperty("deployPassword")) {
-        repositories {
-            maven {
-                url = "https://nexus.statkart.no/repository/releases/"
-                credentials {
-                    username = "$deployUser"
-                    password = "$deployPassword"
-                }
-            }
         }
     }
 }

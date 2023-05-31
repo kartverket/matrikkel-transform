@@ -11,14 +11,7 @@ pipeline {
         jdk 'Java 11 Latest'
     }
 
-    parameters {
-        string(name: "tag", description: "Tag / versjon som skal publiseres (spesifiser kun tag her). Husk å sette versjon i build.gradle og tagge med samme versjon først!")
-    }
-
     environment {
-        DEPLOYUSER = credentials("nexusdeploy")
-        deployOptions = "-PdeployUser=${DEPLOYUSER_USR} " +
-                "-PdeployPassword=${DEPLOYUSER_PSW}"
         gradleOptions = "--info " +
                 "--refresh-dependencies " +
                 "-Dmaven.repo.local=${WORKSPACE}/.m2/repository " +
@@ -31,23 +24,9 @@ pipeline {
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: "20"))
         disableConcurrentBuilds()
-        skipDefaultCheckout()
     }
 
     stages {
-        stage("Checkout") {
-            steps {
-                checkout([
-                    $class: "GitSCM",
-                    branches: [[name: "refs/tags/${params.tag}"]],
-                    userRemoteConfigs: [[
-                        credentialsId: 'Github-app-matrikkel',
-                        url: "https://github.com/kartverket/matrikkel-transform.git"
-                    ]]
-                ])
-            }
-        }
-
         stage("Clean") {
             steps {
                 sh "./gradlew ${gradleOptions} clean"
@@ -59,15 +38,25 @@ pipeline {
                 sh "./gradlew ${gradleOptions} assemble"
             }
         }
-
-        stage("Publish") {
+        stage("Publish GitHub") {
             steps {
                 withCredentials([usernamePassword(
-                                    credentialsId: 'matrikkel-pat-github',
-                                    usernameVariable: 'GITHUB_USER',
-                                    passwordVariable: 'GITHUB_TOKEN')
+                    credentialsId: 'matrikkel-pat-github',
+                    usernameVariable: 'GITHUB_USER',
+                    passwordVariable: 'GITHUB_TOKEN')
                 ]) {
-                    sh "./gradlew ${gradleOptions} ${deployOptions} publish --init-script config/gradle/scripts/mavenPublishGitHub.gradle"
+                        sh "./gradlew ${gradleOptions} publish -PprojectVersion=${TAG_NAME} --init-script gradle/scripts/mavenPublishGitHub.gradle"
+                    }
+                }
+            }
+        stage("Publish Nexus") {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'nexusdeploy',
+                    usernameVariable: 'DEPLOYUSER_USR',
+                    passwordVariable: 'DEPLOYUSER_PSW')
+                ]) {
+                        sh "./gradlew ${gradleOptions} -PprojectVersion=${TAG_NAME} publish --init-script gradle/scripts/mavenPublish.gradle "
                 }
             }
         }
