@@ -3,8 +3,9 @@ plugins {
     id 'maven-publish'
 }
 
-version = '1.2.0'
 group = 'no.kartverket.matrikkel'
+
+project.version = project.findProperty('projectVersion') ?: '1.2.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8

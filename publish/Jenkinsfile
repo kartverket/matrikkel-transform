@@ -45,7 +45,7 @@ pipeline {
                     usernameVariable: 'GITHUB_USER',
                     passwordVariable: 'GITHUB_TOKEN')
                 ]) {
-                        sh "./gradlew ${gradleOptions} publish -Dorg.gradle.project.version=${TAG_NAME} --init-script gradle/scripts/mavenPublishGitHub.gradle"
+                        sh "./gradlew ${gradleOptions} publish -PprojectVersion=${TAG_NAME} --init-script gradle/scripts/mavenPublishGitHub.gradle"
                     }
                 }
             }
