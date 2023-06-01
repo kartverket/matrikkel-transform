@@ -31,6 +31,34 @@ pipeline {
                 sh "./gradlew ${gradleOptions} -DignoreFailures=true test"
             }
         }
+        stage("Publish GitHub") {
+            when {
+                branch 'master'
+            }
+            steps {
+                withCredentials([usernamePassword(
+                        credentialsId: 'matrikkel-pat-github',
+                        usernameVariable: 'GITHUB_USER',
+                        passwordVariable: 'GITHUB_TOKEN')
+                ]) {
+                    sh "./gradlew ${gradleOptions} publish --init-script gradle/scripts/mavenPublishGitHub.gradle"
+                }
+            }
+        }
+        stage("Publish Nexus") {
+            when {
+                branch 'master'
+            }
+            steps {
+                withCredentials([usernamePassword(
+                        credentialsId: 'nexusdeploy',
+                        usernameVariable: 'DEPLOYUSER_USR',
+                        passwordVariable: 'DEPLOYUSER_PSW')
+                ]) {
+                    sh "./gradlew ${gradleOptions} publish --init-script gradle/scripts/mavenPublish.gradle "
+                }
+            }
+        }
     }
     post {
         always {
