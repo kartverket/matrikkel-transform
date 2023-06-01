@@ -38,20 +38,32 @@ pipeline {
                 sh "./gradlew ${gradleOptions} assemble"
             }
         }
-
-        stage("Publish") {
+        stage("Publish GitHub") {
             steps {
                 withCredentials([usernamePassword(
-                                    credentialsId: 'matrikkel-pat-github',
-                                    usernameVariable: 'GITHUB_USER',
-                                    passwordVariable: 'GITHUB_TOKEN')
+                    credentialsId: 'matrikkel-pat-github',
+                    usernameVariable: 'GITHUB_USER',
+                    passwordVariable: 'GITHUB_TOKEN')
                 ]) {
-                    if (env.BRANCH_NAME == "master") {
-                        sh "./gradlew ${gradleOptions} publish --init-script gradle/scripts/mavenPublishGitHub.gradle"
-                    } else {
                         sh "./gradlew ${gradleOptions} publish -Pmatrikkel_versjon=${TAG_NAME} --init-script gradle/scripts/mavenPublishGitHub.gradle"
                     }
 
+                }
+            }
+        stage("Publish Nexus") {
+            steps {
+                withCredentials([
+                    file(credentialsId: "kodesignering.p12", variable: "keystore"),
+                    usernamePassword(
+                        credentialsId: "kodesigneringp12",
+                        passwordVariable: "keystore_password",
+                        usernameVariable: "keystore_alias"),
+                    usernamePassword(
+                        credentialsId: 'nexusdeploy',
+                        usernameVariable: 'DEPLOYUSER_USR',
+                        passwordVariable: 'DEPLOYUSER_PSW')
+                ]) {
+                    sh "./gradlew ${gradleOptions} -Pmatrikkel_versjon=${TAG_NAME} publish --init-script gradle/scripts/mavenPublish.gradle "
                 }
             }
         }
