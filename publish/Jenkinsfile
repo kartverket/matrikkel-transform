@@ -53,11 +53,6 @@ pipeline {
         stage("Publish Nexus") {
             steps {
                 withCredentials([
-                    file(credentialsId: "kodesignering.p12", variable: "keystore"),
-                    usernamePassword(
-                        credentialsId: "kodesigneringp12",
-                        passwordVariable: "keystore_password",
-                        usernameVariable: "keystore_alias"),
                     usernamePassword(
                         credentialsId: 'nexusdeploy',
                         usernameVariable: 'DEPLOYUSER_USR',
