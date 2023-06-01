@@ -45,21 +45,21 @@ pipeline {
                     usernameVariable: 'GITHUB_USER',
                     passwordVariable: 'GITHUB_TOKEN')
                 ]) {
-                        sh "./gradlew ${gradleOptions} publish -Pmatrikkel_versjon=${TAG_NAME} --init-script gradle/scripts/mavenPublishGitHub.gradle"
+                        sh "./gradlew ${gradleOptions} publish -Dorg.gradle.project.version=${TAG_NAME} --init-script gradle/scripts/mavenPublishGitHub.gradle"
                     }
                 }
             }
-        stage("Publish Nexus") {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'nexusdeploy',
-                    usernameVariable: 'DEPLOYUSER_USR',
-                    passwordVariable: 'DEPLOYUSER_PSW')
-                ]) {
-                        sh "./gradlew ${gradleOptions} -Pmatrikkel_versjon=${TAG_NAME} publish --init-script gradle/scripts/mavenPublish.gradle "
-                }
-            }
-        }
+//        stage("Publish Nexus") {
+//            steps {
+//                withCredentials([usernamePassword(
+//                    credentialsId: 'nexusdeploy',
+//                    usernameVariable: 'DEPLOYUSER_USR',
+//                    passwordVariable: 'DEPLOYUSER_PSW')
+//                ]) {
+//                        sh "./gradlew ${gradleOptions} -Pversion=${TAG_NAME} publish --init-script gradle/scripts/mavenPublish.gradle "
+//                }
+//            }
+//        }
     }
 
     post {
