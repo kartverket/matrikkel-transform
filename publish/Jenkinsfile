@@ -49,17 +49,17 @@ pipeline {
                     }
                 }
             }
-//        stage("Publish Nexus") {
-//            steps {
-//                withCredentials([usernamePassword(
-//                    credentialsId: 'nexusdeploy',
-//                    usernameVariable: 'DEPLOYUSER_USR',
-//                    passwordVariable: 'DEPLOYUSER_PSW')
-//                ]) {
-//                        sh "./gradlew ${gradleOptions} -Pversion=${TAG_NAME} publish --init-script gradle/scripts/mavenPublish.gradle "
-//                }
-//            }
-//        }
+        stage("Publish Nexus") {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'nexusdeploy',
+                    usernameVariable: 'DEPLOYUSER_USR',
+                    passwordVariable: 'DEPLOYUSER_PSW')
+                ]) {
+                        sh "./gradlew ${gradleOptions} -PprojectVersion=${TAG_NAME} publish --init-script gradle/scripts/mavenPublish.gradle "
+                }
+            }
+        }
     }
 
     post {
