@@ -1,0 +1,33 @@
+# nonk8s
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: matrikkel-transform-team
+spec:
+  type: team
+  parent: Eiendom
+  children: [matrikkel-transform-security-champion]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: matrikkel-transform-security-champion
+  annotations:
+    github.com/user-login: lislei
+spec:
+  type: security-champion
+  parent: security-champions-Eiendom
+  members: [Matrikkel]
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: matrikkel-transform
+  links:
+    - url: https://github.com/kartverket/matrikkel-transform
+      title: matrikkel-transform på GitHub
+spec:
+  type: repo
+  lifecycle: production
+  owner: matrikkel-transform-team
