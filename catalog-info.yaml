@@ -1,0 +1,39 @@
+# nonk8s
+apiVersion: "backstage.io/v1alpha1"
+kind: "Component"
+metadata:
+  name: "matrikkel-transform"
+  tags:
+  - "internal"
+spec:
+  type: "library"
+  lifecycle: "production"
+  owner: "heimdall"
+  system: "matrikkel"
+---
+apiVersion: "backstage.io/v1alpha1"
+kind: "Group"
+metadata:
+  name: "security_champion_matrikkel-transform"
+  title: "Security Champion matrikkel-transform"
+spec:
+  type: "security_champion"
+  parent: "eiendom_security_champions"
+  members:
+  - "lislei"
+  children:
+  - "resource:matrikkel-transform"
+---
+apiVersion: "backstage.io/v1alpha1"
+kind: "Resource"
+metadata:
+  name: "matrikkel-transform"
+  links:
+  - url: "https://github.com/kartverket/matrikkel-transform"
+    title: "matrikkel-transform på GitHub"
+spec:
+  type: "repo"
+  owner: "security_champion_matrikkel-transform"
+  system: "matrikkel"
+  dependencyOf:
+  - "component:matrikkel-transform"
