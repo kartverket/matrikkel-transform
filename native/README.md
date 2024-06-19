@@ -136,7 +136,8 @@ I denne seksjonen vil byggestegene av matrikkel-transform og dens avhengigheter 
 
 Byggstegene er gjeldene for uansett plattform, men i matrikkel-transform/native så må [Makefile](../native/Makefile) tweakes slik at riktig byggfil bygges:
 
-* libsositrans.jnilib → Mac
+* libsositrans_intel.so → Mac intel
+* libsositrans_arch.jnilib → Mac m*
 * libsositrans.so  → linux
 * SosiTransformasjon.dll → windows
 
