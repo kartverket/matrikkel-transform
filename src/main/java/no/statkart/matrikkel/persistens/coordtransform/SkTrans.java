@@ -23,7 +23,7 @@ import java.util.Arrays;
 public class SkTrans {
 
     private enum OsType {
-        WINDOWS, LINUX, DARWIN
+        WINDOWS, LINUX, DARWIN_ARM, DARWIN_INTEL
     }
 
     private static final Logger logger = LoggerFactory.getLogger(SkTrans.class);
@@ -34,11 +34,12 @@ public class SkTrans {
     private static final Filename linuxLibrary = new Filename("libsositrans.so");
 
     //darwinLibrary filen består av samme "kode" som linuxLibrary, men er compilet på en mac "silicon" maskin (da med gcc 12 og ikke gcc 9).
-    private static final Filename darwinLibrary = new Filename("libsositrans.jnilib");
+    private static final Filename darwinLibrary_arm = new Filename("libsositrans_arm.jnilib");
+    private static final Filename darwinLibrary_intel = new Filename("libsositrans_intel.so");
     private static final Filename windowsLibrary = new Filename("SosiTransformasjon.dll");
     private static final Filename[] libraries = {
             linuxLibrary,
-            darwinLibrary,
+            darwinLibrary_arm,
             windowsLibrary,
             new Filename("libifcoremd.dll"),
             new Filename("libmmd.dll"),
@@ -93,7 +94,12 @@ public class SkTrans {
         } else if (osName.equals("linux")) {
             return OsType.LINUX;
         } else if (osName.contains("mac")) {
-            return OsType.DARWIN;
+            String arch = System.getProperty("os.arch").toLowerCase();
+            if(arch.contains("aarch64")){
+                return OsType.DARWIN_ARM;
+            } else if (arch.contains("x86_64")) {
+                return OsType.DARWIN_INTEL;
+            }
         }
 
         throw new RuntimeException(String.format("Transformation library initialization failed, could not recognize operating system: %s", osName));
@@ -294,8 +300,10 @@ public class SkTrans {
         switch (getOS()) {
             case LINUX:
                 return linuxLibrary;
-            case DARWIN:
-                return darwinLibrary;
+            case DARWIN_ARM:
+                return darwinLibrary_arm;
+            case DARWIN_INTEL:
+                return darwinLibrary_intel;
             case WINDOWS:
                 return windowsLibrary;
         }
