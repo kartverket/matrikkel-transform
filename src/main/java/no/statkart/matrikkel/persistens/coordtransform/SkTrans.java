@@ -39,6 +39,7 @@ public class SkTrans {
     private static final Filename windowsLibrary = new Filename("SosiTransformasjon.dll");
     private static final Filename[] libraries = {
             linuxLibrary,
+            darwinLibrary_intel,
             darwinLibrary_arm,
             windowsLibrary,
             new Filename("libifcoremd.dll"),
