@@ -20,6 +20,7 @@ pipeline {
         deployOptions = "-PdeployUser=${DEPLOYUSER_USR} " +
                 "-PdeployPassword=${DEPLOYUSER_PSW}"
         gradleOptions = "--info " +
+                "-Dhttps.proxyHost=proxy.kartverket.no -Dhttps.proxyPort=3128" +
                 "--refresh-dependencies " +
                 "-Dmaven.repo.local=${WORKSPACE}/.m2/repository " +
                 "-Dorg.gradle.daemon=false " +
