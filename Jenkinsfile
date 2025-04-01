@@ -13,7 +13,7 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        gradleOptions = "--no-daemon --info"
+        gradleOptions = "--no-daemon --info -Dhttps.proxyHost=proxy.kartverket.no -Dhttps.proxyPort=3128 "
     }
     stages{
         stage('Clean') {
