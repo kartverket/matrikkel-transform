@@ -1,9 +1,0 @@
-; C:\msys64\mingw64\bin\dlltool --base-file C:\msys64\tmp\cca19000.base --output-exp SosiTransformasjon.exp --dllname SosiTransformasjon.dll --output-def libSosiTransformasjon.def --no-export-all-symbols --exclude-symbol=DllMainCRTStartup --def C:\msys64\tmp\cca19000.def --output-lib libSosiTransformasjon.a
-LIBRARY SosiTransformasjon.dll
-
-EXPORTS
-	Java_no_statkart_matrikkel_persistens_coordtransform_SkTrans_initialize @ 1
-	Java_no_statkart_matrikkel_persistens_coordtransform_SkTrans_xSosiTrans @ 2
-	Java_no_statkart_matrikkel_persistens_coordtransform_SkTrans_getLastError @ 3
-        initialize @ 4
-        sositrans @ 5
