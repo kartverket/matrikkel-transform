@@ -91,7 +91,7 @@ jobs:
     needs:
       - test
       - calculate-version
-    #if: github.ref_name == 'develop' && github.event_name == 'push'
+    if: github.ref_name == 'develop' && github.event_name == 'push'
 
     permissions:
       contents: read
