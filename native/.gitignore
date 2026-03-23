@@ -1,0 +1,9 @@
+SosiTransformasjon.dll
+SosiTransformasjon.o
+libSosiTransformasjon.a
+sandbox.o
+sandbox.exe
+sandbox
+*.class
+libsositrans.so
+SosiTransformasjon.o

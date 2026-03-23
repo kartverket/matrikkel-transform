@@ -1,0 +1,21 @@
+CC = gcc
+CFLAGS += -Wall -O0 -g
+# CFLAGS += -Wall -O0 -g -I"${JAVA_HOME}/include" -I"${JAVA_HOME}/include/win32"
+# LDFLAGS += -L"${JAVA_HOME}/bin/server" -l:jvm.dll
+TARGET_BASE = sandbox
+RM = rm -f
+ifeq ($(OS),Windows_NT)
+	TARGET = $(TARGET_BASE).exe
+else
+	TARGET = $(TARGET_BASE)
+	LDFLAGS = -static-libgcc -L. -lsositrans -Wl,--rpath=. -lc -lm libskt2lan2.a /opt/gcc-8.3.0/lib64/libquadmath.a /opt/gcc-8.3.0/lib64/libgfortran.a
+endif
+
+
+$(TARGET): $(TARGET_BASE).o
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+all: $(TARGET)
+
+clean:
+	$(RM) $(TARGET_BASE).o $(TARGET)

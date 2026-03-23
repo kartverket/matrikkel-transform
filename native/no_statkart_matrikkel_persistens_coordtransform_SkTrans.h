@@ -1,0 +1,10 @@
+#ifndef _Included_no_statkart_matrikkel_persistens_coordtransform_SkTrans
+#define _Included_no_statkart_matrikkel_persistens_coordtransform_SkTrans
+
+#define SOSITRANS_FUNCTION Java_no_statkart_matrikkel_persistens_coordtransform_SkTrans_xSosiTrans
+#define INITIALIZE_FUNCTION Java_no_statkart_matrikkel_persistens_coordtransform_SkTrans_initialize
+#define GETLASTERROR_FUNCTION Java_no_statkart_matrikkel_persistens_coordtransform_SkTrans_getLastError
+
+#include "api.h"
+
+#endif
