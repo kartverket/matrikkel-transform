@@ -1,5 +1,10 @@
 # Wrapper rundt SkTrans-transformajonsbiblioteket
 
+## Automatisering
+Jenkins jobben som bygget native-biblioteker (sktrans) for transform og lastet opp resultatet på devbin ble slettet i TH-2541.
+Ny bygging av native-biblioteker er ikke laget en tilsvarende jobb, da dette biblioteket ikke har blitt oppdatert siden 2020.
+Se https://github.com/kartverket/matrikkel-skt2lan2 som er repoet som bygger dette biblioteket.
+
 ## Bakgrunn
 
 Matrikkelen benytter et bibliotek for transformasjoner som er utviklet
