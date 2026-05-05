@@ -21,7 +21,7 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:3.27.7'
-    testRuntimeOnly 'org.slf4j:slf4j-simple:1.8.0-beta4'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:2.1.0-alpha1'
 }
 
 jar {
