@@ -3,7 +3,7 @@ apiVersion: "backstage.io/v1alpha1"
 kind: Component
 metadata:
   name: "matrikkel-transform"
-  description: "Transformasjons bibliotek for koordinater som brukes i matrikkelen."
+  description: "Transformasjons bibliotek som regner om koordinater mellom ulike koordinatsystem"
   tags:
     - "public"
 spec:
