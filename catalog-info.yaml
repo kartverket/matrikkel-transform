@@ -1,9 +1,11 @@
-apiVersion: backstage.io/v1alpha1
+# nonk8s
+apiVersion: "backstage.io/v1alpha1"
 kind: Component
 metadata:
-  name: matrikkel-transform
+  name: "matrikkel-transform"
+  description: "Transformasjons bibliotek for koordinater som brukes i matrikkelen."
   tags:
-    - internal
+    - "public"
 spec:
   type: library
   lifecycle: production
