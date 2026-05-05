@@ -20,7 +20,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.30'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.assertj:assertj-core:3.14.0'
+    testImplementation 'org.assertj:assertj-core:3.27.7'
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.8.0-beta4'
 }
 
