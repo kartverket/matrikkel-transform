@@ -10,4 +10,4 @@ spec:
   type: library
   lifecycle: production
   owner: heimdall
-  system: matrikkel
+  system: m22
