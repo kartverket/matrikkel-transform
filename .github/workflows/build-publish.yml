@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version-string.outputs.version }}
+      should_tag_and_deploy: ${{ steps.version-string.outputs.should_tag_and_deploy }}
 
     steps:
       - name: Generate version string
@@ -27,7 +28,19 @@ jobs:
         shell: bash
         run: |
           version="${{ env.MAJOR_VERSION }}.$(date -u '+%Y.%m.%d-%H.%M')-$(echo "${GITHUB_SHA}" | cut -c1-7)"
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+          if [[ ${{github.event_name}} == 'push' ]]; then
+            echo "version=${version}" >> "$GITHUB_OUTPUT"
+            echo "should_tag_and_deploy=true" >> $GITHUB_OUTPUT
+          elif [[ ${{github.event_name}} == 'workflow_dispatch' ]]; then
+            echo "version=${version}-wd" >> "$GITHUB_OUTPUT"
+            echo "should_tag_and_deploy=true" >> $GITHUB_OUTPUT
+          elif [[ ${{github.event_name}} == 'pull_request' ]]; then
+            echo "version=${version}-pr" >> "$GITHUB_OUTPUT"
+            echo "should_tag_and_deploy=false" >> $GITHUB_OUTPUT 
+          else
+            echo "Kunne ikke finne ut hva slags bygg som er ment (burde aldri skje)"
+          fi
 
   build:
     name: Build
@@ -91,7 +104,7 @@ jobs:
     needs:
       - test
       - calculate-version
-    if: github.ref_name == 'develop' && github.event_name == 'push'
+    if: ${{ needs.calculate-version.outputs.should_tag_and_deploy == 'true' }}
 
     permissions:
       contents: read
