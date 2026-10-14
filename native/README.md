@@ -2,8 +2,24 @@
 
 ## Automatisering
 Jenkins jobben som bygget native-biblioteker (sktrans) for transform og lastet opp resultatet på devbin ble slettet i TH-2541.
-Ny bygging av native-biblioteker er ikke laget en tilsvarende jobb, da dette biblioteket ikke har blitt oppdatert siden 2020.
+Ny bygging av native-biblioteker er ikke laget en tilsvarende jobb. Binærene i [lib](../lib)
+bygges derfor manuelt og committes direkte, ikke av CI.
 Se https://github.com/kartverket/matrikkel-skt2lan2 som er repoet som bygger dette biblioteket.
+
+Etter en endring i `SosiTransformasjon.c` som gjelder `lib/libsositrans.so` (Linux x86_64,
+biblioteket som faktisk brukes i prod), kjør `native/rebuild-linux-lib.sh` (krever Docker) og
+committ den resulterende binæren. Scriptet bygger i en `gcc:9`-container (valgt for å ligge
+nærmest mulig GCC 9.2.0-verktøykjeden som `libskt2lan2.a` opprinnelig ble lenket mot) og
+verifiserer etterpå at ingen av funksjonene i `SosiTransformasjon.c` eksporteres som globale
+symboler med navn som kolliderer med HotSpot sine interne debugger-hjelpefunksjoner
+(`debug`, `nm`, `pp`, `ps`, `flush`, `find`, `help`, `universe`, `verify`, `ndebug`) - se
+forklaring under «Debugging»-seksjonen og incident-historikken for `debug`/`debugging`-
+kollisjonen med JDK 25. Denne kollisjonen var i praksis kun mulig på Linux (klassisk
+flat-namespace ELF-symbol-interposisjon): Windows eksporterer aldri disse funksjonene siden
+de ikke er merket med `__declspec(dllexport)`, og macOS sin dyld bruker two-level namespace
+som isolerer symbol-oppslag per bibliotek. De øvrige plattformbinærene
+(`libsositrans_arm.jnilib`, `libsositrans_intel.so`, `SosiTransformasjon.dll`) trenger derfor
+ikke rebygges for denne spesifikke fiksen.
 
 ## Bakgrunn
 
