@@ -21,7 +21,18 @@ repo_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 # --platform linux/amd64 is required: prod runs Linux x86_64, but on an Apple Silicon (or
 # other arm64) host, Docker would otherwise silently pull/run the arm64 variant of gcc:9 and
 # produce a binary for the wrong architecture.
-docker run --rm --platform linux/amd64 -v "${repo_root}:/work" gcc:9 sh /work/native/docker-build-linux-inner.sh
+#
+# Under Git Bash/MSYS2, docker.exe's argument conversion would otherwise also rewrite the
+# container-side /work/... script path below into a Windows host path, so the container
+# can't find it. MSYS_NO_PATHCONV=1 disables that conversion entirely; we then convert only
+# the host-side mount source ourselves (repo_root itself is left untouched, since it's also
+# used unconverted for the plain-sh cp below).
+volume_src="${repo_root}"
+if command -v cygpath >/dev/null 2>&1; then
+    volume_src=$(cygpath -w "${repo_root}")
+fi
+
+MSYS_NO_PATHCONV=1 docker run --rm --platform linux/amd64 -v "${volume_src}:/work" gcc:9 sh /work/native/docker-build-linux-inner.sh
 
 cp "${repo_root}/native/libsositrans.so" "${repo_root}/lib/libsositrans.so"
 echo "Rebuilt and copied libsositrans.so to lib/. Review and commit the result."
