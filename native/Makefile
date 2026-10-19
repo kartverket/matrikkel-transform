@@ -36,7 +36,7 @@ else
 	SHAREDLIB = $(SO)
 	BIN = $(LINBIN)
 	CFLAGS += -I"${JAVA_HOME}/include/linux" -fPIC
-	LDFLAGS = -fPIC -shared -static-libgcc -lc -lm $(SKTLAN_ARCHIVE) $(GCC_HOME)/lib64/libquadmath.a $(GCC_HOME)/lib64/libgfortran.a
+	LDFLAGS = -fPIC -shared -static-libgcc -lc -lm $(SKTLAN_ARCHIVE) $(GCC_HOME)/lib64/libgfortran.a $(GCC_HOME)/lib64/libquadmath.a -Wl,-z,defs
 #	LDFLAGS = -shared -static-libgcc -static-libgfortran -L. -Wl,--whole-archive -lskt2lan2 -lgfortran -lquadmath -lm -Wl,--no-whole-archive
 	INSTALLFILES = $(SHAREDLIB)
 endif
