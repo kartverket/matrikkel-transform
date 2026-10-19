@@ -10,6 +10,11 @@ Etter en endring i `SosiTransformasjon.c` som gjelder `lib/libsositrans.so` (Lin
 biblioteket som faktisk brukes i prod), kjør `native/rebuild-linux-lib.sh` (krever Docker) og
 committ den resulterende binæren. Scriptet bygger i en `gcc:9`-container (valgt for å ligge
 nærmest mulig GCC 9.2.0-verktøykjeden som `libskt2lan2.a` opprinnelig ble lenket mot) og
+delegerer selve kompileringen/lenkingen til `native/Makefile`s eksisterende Linux-gren -
+samme `make`-mål som brukes ved lokal/manuell bygging - slik at kompilator- og
+lenkeflaggene kun er definert ett sted. Scriptet bygger selv PIC-varianter av
+`libgfortran.a`/`libquadmath.a` (siden den opprinnelige `/opt/gcc-9.2.0`-verktøykjeden ikke
+lenger finnes noe sted) og peker Makefilens `GCC_HOME`-variabel til disse, før det
 verifiserer etterpå at ingen av funksjonene i `SosiTransformasjon.c` eksporteres som globale
 symboler med navn som kolliderer med HotSpot sine interne debugger-hjelpefunksjoner
 (`debug`, `nm`, `pp`, `ps`, `flush`, `find`, `help`, `universe`, `verify`, `ndebug`) - se
@@ -20,6 +25,11 @@ de ikke er merket med `__declspec(dllexport)`, og macOS sin dyld bruker two-leve
 som isolerer symbol-oppslag per bibliotek. De øvrige plattformbinærene
 (`libsositrans_arm.jnilib`, `libsositrans_intel.so`, `SosiTransformasjon.dll`) trenger derfor
 ikke rebygges for denne spesifikke fiksen.
+
+`native/Makefile.sandbox`s Linux-gren peker fremdeles på en verktøykjede
+(`/opt/gcc-8.3.0/...`) som ikke lenger finnes noe sted. Den brukes kun til lokal
+feilsøking/debugging (se «Testing av kode og funksjonalitet» under) og er ikke involvert i
+å produsere den committede `lib/libsositrans.so`.
 
 ## Bakgrunn
 

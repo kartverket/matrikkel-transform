@@ -1,8 +1,10 @@
 #!/bin/sh
 # Runs *inside* the gcc:9 container (invoked by rebuild-linux-lib.sh). Builds
 # libsositrans.so from the current native/SosiTransformasjon.c and the vendored
-# native/libskt2lan2.a, then verifies none of its functions are exported as global
-# symbols with names that collide with HotSpot's internal debugger-helper symbols.
+# native/libskt2lan2.a via native/Makefile's own Linux recipe (the same one used for
+# local/manual builds - see native/README.md), then verifies none of its functions are
+# exported as global symbols with names that collide with HotSpot's internal
+# debugger-helper symbols.
 #
 # See the incident note in SosiTransformasjon.c (the `debug`/`debugging` functions) for
 # why this check exists: a non-static `debug()` here previously collided, via ELF symbol
@@ -64,12 +66,20 @@ PIC_LIBQUADMATH=$(find "$WORKDIR/gcc-${GCC_VERSION}/build" -name 'libquadmath.a'
 echo "Built PIC libgfortran.a: $PIC_LIBGFORTRAN"
 echo "Built PIC libquadmath.a: $PIC_LIBQUADMATH"
 
+# Stage the PIC archives under a GCC_HOME-shaped directory (lib64/lib{gfortran,quadmath}.a)
+# so that native/Makefile's existing Linux build recipe - the same one used for local/manual
+# builds - can be pointed at them via its GCC_HOME variable. This keeps the compile/link
+# flags and the static-archive link order defined in exactly one place (the Makefile)
+# instead of duplicating them here.
+GCC_STAGE_HOME="$WORKDIR/gcc-home"
+mkdir -p "$GCC_STAGE_HOME/lib64"
+cp "$PIC_LIBGFORTRAN" "$PIC_LIBQUADMATH" "$GCC_STAGE_HOME/lib64/"
+
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 cd /work/native
-rm -f SosiTransformasjon.o libsositrans.so
-gcc -c SosiTransformasjon.c -o SosiTransformasjon.o -O3 -I"${JAVA_HOME}/include" -I"${JAVA_HOME}/include/linux" -fPIC
-gcc -o libsositrans.so SosiTransformasjon.o -fPIC -shared -static-libgcc -lc -lm libskt2lan2.a "$PIC_LIBQUADMATH" "$PIC_LIBGFORTRAN"
+make clean
+make GCC_HOME="$GCC_STAGE_HOME" JAVA_HOME="$JAVA_HOME"
 
 echo "--- Verifying no colliding global debug-helper symbols are exported ---"
 bad_symbols="debug debugging nm pp ps flush find help universe verify ndebug"
