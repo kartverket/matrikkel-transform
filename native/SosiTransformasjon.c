@@ -76,7 +76,13 @@ static char * last_error = NULL;
 
 static int debug_enabled = -1;
 
-int debugging() {
+// static: these must NOT be exported as global symbols. Without `static`, gcc exports them
+// with default visibility in libsositrans.so's dynamic symbol table. Since JDK 25's libjvm
+// also globally exports a same-named `debug` symbol (an internal HotSpot debugger helper,
+// see hotspot/share/utilities/debug.cpp), ELF symbol interposition can redirect calls below
+// into HotSpot's debug() instead of this one, bypassing the SOSITRANSFORM_DEBUG gate entirely
+// and spamming raw "Executing debug" lines straight to the process' stdout on every call.
+static int debugging() {
     if (debug_enabled < 0) {
         char *enabled = getenv("SOSITRANSFORM_DEBUG");
         debug_enabled = (enabled && strncmp(enabled, "1", 2) == 0);
@@ -84,7 +90,7 @@ int debugging() {
     return debug_enabled;
 }
 
-void debug(const char *format, ...) {
+static void debug(const char *format, ...) {
     if (debugging()) {
         fprintf(stderr, "[SosiTransformasjon] ");
         va_list ap;
@@ -211,7 +217,7 @@ void normalize(char *path) {
 
 /**
  * Initialiserings-funksjon. Her lastes ekstern dll og
- * funksjons-innganger blir gitt. Får også satt floating point flagg
+ * funksjons-innganger blir gitt. FÃ¥r ogsÃ¥ satt floating point flagg
  * riktig i forhold til dll-en.
  */
 SOSI_EXPORT
